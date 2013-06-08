@@ -2,7 +2,11 @@ package com.taobao.android.ski;
 
 import static android.content.pm.PackageManager.GET_INSTRUMENTATION;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
+
+import com.taobao.android.ski.radar.ActivityPerfMon;
+import com.taobao.android.ski.radar.SysLogMon;
 
 import android.app.Activity;
 import android.app.Instrumentation;
@@ -71,7 +75,9 @@ public class Dock extends Instrumentation {
 		//mCollector.beginSnapshot("Startup");
 		if ((mFlags & FLAG_LAUNCH_PROFILING) != 0)
 			Debug.startMethodTracing(Environment.getExternalStorageDirectory().getPath() + "/ski.trace", 128 * 1024 * 1024);
-
+		
+		SysLogMon.start(this);
+		
 		// Start launch intent of the app.
 		long start = System.currentTimeMillis();
 		getTargetContext().startActivity(intent);
@@ -80,6 +86,8 @@ public class Dock extends Instrumentation {
 		long duration = System.currentTimeMillis() - start;
 		//mCollector.endSnapshot();
 		if ((mFlags & FLAG_LAUNCH_TIMING) != 0) notify("App Start Time", duration + "ms");
+
+//		SysLogMon.stop();
 	}
 
 	@Override public void callActivityOnResume(Activity activity) {
