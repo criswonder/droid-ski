@@ -22,6 +22,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 import android.os.Debug;
 import android.os.Environment;
+import android.os.StrictMode;
 import android.util.Log;
 
 /** @author Oasis */
@@ -45,8 +46,30 @@ public class Dock extends Instrumentation {
 		return null;
 	}
 
+	public Dock() {
+		super();
+		
+		Log.e(TAG, "Create dock");
+		
+		StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+//        .detectDiskReads()
+//        .detectDiskWrites()
+//        .detectNetwork()   // or .detectAll() for all detectable problems
+        .detectAll()
+        .penaltyFlashScreen()
+        .build());
+		
+		StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
+        .detectLeakedSqlLiteObjects()
+        .detectLeakedClosableObjects()
+        .penaltyLog()
+        .penaltyDeath()
+        .build());
+	}
+
 	@Override public void onCreate(final Bundle arguments) {
 		super.onCreate(arguments);
+		
 		mFlags = arguments == null ? 0 : arguments.getInt(KEY_FLAGS, 0);
 
 //		if ((mFlags & FLAG_MONITOR_ANIMATION_PERF) == 0)
@@ -64,7 +87,8 @@ public class Dock extends Instrumentation {
 			final PackageInfo info = pm.getPackageInfo(getContext().getPackageName(), GET_INSTRUMENTATION);
 			final InstrumentationInfo instru_info = info.instrumentation[0];
 			target_pkg = instru_info.targetPackage;
-		} catch (final NameNotFoundException e) { /* Should never happen */ return; }
+		} catch (final NameNotFoundException e) { /* Should never happen */ return; }	
+		
 		final Intent intent = pm.getLaunchIntentForPackage(target_pkg);
 
 		waitForIdleSync();		// TODO: Wait for CPU to be real idle

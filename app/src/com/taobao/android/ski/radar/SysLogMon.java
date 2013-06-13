@@ -55,7 +55,7 @@ public class SysLogMon {
 				
 //				Runtime.getRuntime().exec(new String[] { "logcat","-c" }).waitFor();
 				
-				//获取logcat日志信息   {"logcat", "-d", "AndroidRuntime:E [Your Log Tag Here]:V *:S" });
+				//{"logcat", "-d", "AndroidRuntime:E [Your Log Tag Here]:V *:S" });
 				mLogcatProc = Runtime.getRuntime().exec(new String[] { "logcat","-d", "Choreographer:V *:S" });
 //				mLogcatProc = Runtime.getRuntime().exec(new String[] { "logcat","-d"});
 				reader = new BufferedReader(new InputStreamReader(mLogcatProc.getInputStream()));  
