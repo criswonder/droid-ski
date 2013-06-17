@@ -50,15 +50,6 @@ public class Dock extends Instrumentation {
 		return null;
 	}
 
-	public Dock() {
-		super();
-		
-//		Debug.waitForDebugger();
-		Log.e(TAG, "Create dock");
-		
-		StrictModeMon.start(this);
-	}
-
 	@Override public void onCreate(final Bundle arguments) {
 		if (arguments.getBoolean(KEY_ATTACH_DEBUGGER)) Debug.waitForDebugger();
 		super.onCreate(arguments);
@@ -108,6 +99,7 @@ public class Dock extends Instrumentation {
 		if ((mFlags & FLAG_LAUNCH_TIMING) != 0) notify("App Start Time", duration + "ms");
 
 //		SysLogMon.stop();
+		
 		Toto.get(this.getTargetContext()).showCustomToast("test");
 	}
 

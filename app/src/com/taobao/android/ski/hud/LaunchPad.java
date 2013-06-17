@@ -7,8 +7,10 @@ import android.os.Debug;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.EditText;
+import android.widget.ToggleButton;
 
 import com.taobao.android.ski.Dock;
+import com.taobao.android.ski.DockForStrictMode;
 import com.taobao.android.ski.R;
 
 /** @author Oasis */
@@ -39,7 +41,14 @@ public class LaunchPad extends Activity {
 			options.putInt(Dock.KEY_THREASHOLD, 5);
 		}
 		
-		boolean result = startInstrumentation(new ComponentName(this, Dock.class), null, options);
-		if (! result) throw new LinkageError("Instrumentation is not correctly configured.");
+		ToggleButton tbut = (ToggleButton)findViewById(R.id.togglebutton);
+		boolean result = false;
+		if(tbut.isChecked()) {
+			result = startInstrumentation(new ComponentName(this, DockForStrictMode.class), null, options);
+		} else {
+			result = startInstrumentation(new ComponentName(this, Dock.class), null, options);
+		}
+		 
+		if (! result) throw new LinkageError("Instrumentation is not correctly configured. May be your target app didn't installed");
 	}
 }

@@ -6,6 +6,14 @@
     android:gravity="bottom"
     android:orientation="vertical" >
 
+	<ToggleButton 
+    	android:id="@+id/togglebutton"
+    	android:layout_width="wrap_content"
+    	android:layout_height="wrap_content"
+    	android:textOn="StrictMode on"
+    	android:textOff="StrictMode off"
+    	android:gravity="center_horizontal"/>
+    
    <RelativeLayout 
         android:id="@+id/launch_thres"
         android:layout_width="match_parent"
