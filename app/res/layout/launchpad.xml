@@ -6,6 +6,29 @@
     android:gravity="bottom"
     android:orientation="vertical" >
 
+   <RelativeLayout 
+        android:id="@+id/launch_thres"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal" >
+        
+        <TextView
+            android:id="@+id/edit_intro"
+			android:text="丢帧检测门限："
+			android:layout_centerVertical="true"
+        	android:layout_width="wrap_content"
+        	android:layout_height="wrap_content" >
+            
+        </TextView>
+
+        <EditText 
+            android:id="@+id/edit_content"
+            android:layout_toRightOf="@id/edit_intro"
+        	android:layout_width="50dp"
+        	android:layout_height="wrap_content"
+        	android:text="5" />
+    </RelativeLayout>
+    
     <Button
         android:id="@+id/launch_timing"
         android:layout_width="match_parent"

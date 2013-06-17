@@ -22,7 +22,7 @@ import com.taobao.android.ski.hud.Yell;
 /** @author hwjump */
 public class SysLogMon {
 
-	private static final int threashold_skipframe = 5;
+	private static int threashold_skipframe = 5;
 	
 	public static class LogMoniterTask extends AsyncTask<Void, Void, Void> {
 
@@ -55,7 +55,7 @@ public class SysLogMon {
 				
 //				Runtime.getRuntime().exec(new String[] { "logcat","-c" }).waitFor();
 				
-				//获取logcat日志信息   {"logcat", "-d", "AndroidRuntime:E [Your Log Tag Here]:V *:S" });
+				//{"logcat", "-d", "AndroidRuntime:E [Your Log Tag Here]:V *:S" });
 				mLogcatProc = Runtime.getRuntime().exec(new String[] { "logcat","-d", "Choreographer:V *:S" });
 //				mLogcatProc = Runtime.getRuntime().exec(new String[] { "logcat","-d"});
 				reader = new BufferedReader(new InputStreamReader(mLogcatProc.getInputStream()));  
@@ -153,20 +153,24 @@ public class SysLogMon {
 		return -1;
 	}
 	
-	public static void start(Instrumentation instruments) {
-	    if (PERMISSION_GRANTED != instruments.getContext().getPackageManager().checkPermission(READ_LOGS, instruments.getContext().getPackageName()))
-	        throw new IllegalStateException("Permission not granted: " + READ_LOGS);
+	public static void start(Instrumentation instruments, int threashold) {
+		if (PERMISSION_GRANTED != instruments.getContext().getPackageManager().checkPermission(READ_LOGS, instruments.getContext().getPackageName()))
+		{	
+			throw new IllegalStateException("Permission not granted: " + READ_LOGS);
+		}
 
 	    mYell = Yell.get(instruments.getTargetContext());
-
+	    
 	    mActivityManager = (ActivityManager) instruments.getContext().getSystemService(Context.ACTIVITY_SERVICE); 
 	    
 	    mContext = instruments.getContext();
 	    
-	    mLogTask = new LogMoniterTask(instruments.getContext(), "com.taobao.taobao");
-	    mLogTask.execute();
+//	    mLogTask = new LogMoniterTask(instruments.getContext(), "com.taobao.taobao");
+//	    mLogTask.execute();
 	    
 	    bStoped = false;
+	    
+	    threashold_skipframe = threashold;
 	    
 	    try {
 	    	final Class<?> clsPMS = Class.forName("android.os.SystemProperties");
