@@ -2,11 +2,7 @@ package com.taobao.android.ski;
 
 import static android.content.pm.PackageManager.GET_INSTRUMENTATION;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
-
-import com.taobao.android.ski.radar.ActivityPerfMon;
-import com.taobao.android.ski.radar.SysLogMon;
 
 import android.app.Activity;
 import android.app.Instrumentation;
@@ -22,8 +18,11 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 import android.os.Debug;
 import android.os.Environment;
-import android.os.StrictMode;
 import android.util.Log;
+
+import com.taobao.android.ski.hud.Toto;
+import com.taobao.android.ski.radar.StrictModeMon;
+import com.taobao.android.ski.radar.SysLogMon;
 
 /** @author Oasis */
 public class Dock extends Instrumentation {
@@ -32,6 +31,8 @@ public class Dock extends Instrumentation {
 	public static final int FLAG_LAUNCH_TIMING = 1 << 0;
 	public static final int FLAG_LAUNCH_PROFILING = 1 << 1;
 	public static final int FLAG_MONITOR_ANIMATION_PERF = 1 << 2;
+	
+	public static final String KEY_THREASHOLD = "choreographer";
 
 	public static Dock getInstrumentationOf(Activity activity) {
 		try {
@@ -49,29 +50,18 @@ public class Dock extends Instrumentation {
 	public Dock() {
 		super();
 		
+//		Debug.waitForDebugger();
 		Log.e(TAG, "Create dock");
 		
-		StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
-//        .detectDiskReads()
-//        .detectDiskWrites()
-//        .detectNetwork()   // or .detectAll() for all detectable problems
-        .detectAll()
-        .penaltyFlashScreen()
-        .build());
-		
-		StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
-        .detectLeakedSqlLiteObjects()
-        .detectLeakedClosableObjects()
-        .penaltyLog()
-        .penaltyDeath()
-        .build());
+		StrictModeMon.start(this);
 	}
 
 	@Override public void onCreate(final Bundle arguments) {
 		super.onCreate(arguments);
 		
 		mFlags = arguments == null ? 0 : arguments.getInt(KEY_FLAGS, 0);
-
+		mThreshold = arguments == null ? 5 : arguments.getInt(KEY_THREASHOLD, 5);
+		
 //		if ((mFlags & FLAG_MONITOR_ANIMATION_PERF) == 0)
 //			AnimationPerfMon.install(getTargetContext(), 15);
 
@@ -80,7 +70,7 @@ public class Dock extends Instrumentation {
 
 	@Override public void onStart() {
 		super.onStart();
-		Debug.waitForDebugger();
+		
 		final PackageManager pm = getContext().getPackageManager();
 		String target_pkg;
 		try {
@@ -100,7 +90,7 @@ public class Dock extends Instrumentation {
 		if ((mFlags & FLAG_LAUNCH_PROFILING) != 0)
 			Debug.startMethodTracing(Environment.getExternalStorageDirectory().getPath() + "/ski.trace", 128 * 1024 * 1024);
 		
-		SysLogMon.start(this);
+		SysLogMon.start(this, mThreshold);
 		
 		// Start launch intent of the app.
 		long start = System.currentTimeMillis();
@@ -112,6 +102,7 @@ public class Dock extends Instrumentation {
 		if ((mFlags & FLAG_LAUNCH_TIMING) != 0) notify("App Start Time", duration + "ms");
 
 //		SysLogMon.stop();
+		Toto.get(this.getTargetContext()).showCustomToast("test");
 	}
 
 	@Override public void callActivityOnResume(Activity activity) {
@@ -131,5 +122,6 @@ public class Dock extends Instrumentation {
 	}
 
 	private int mFlags;
+	private int mThreshold;
 	private static final String TAG = "Dock";
 }
