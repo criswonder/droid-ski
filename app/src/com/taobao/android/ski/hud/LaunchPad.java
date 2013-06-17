@@ -3,6 +3,7 @@ package com.taobao.android.ski.hud;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.os.Bundle;
+import android.os.Debug;
 import android.view.View;
 import android.view.View.OnClickListener;
 
@@ -26,6 +27,7 @@ public class LaunchPad extends Activity {
 	private void start(int flags) {
 		Bundle options = new Bundle();
 		options.putInt(Dock.KEY_FLAGS, flags);
+		if (Debug.isDebuggerConnected()) options.putBoolean(Dock.KEY_ATTACH_DEBUGGER, true);
 		boolean result = startInstrumentation(new ComponentName(this, Dock.class), null, options);
 		if (! result) throw new LinkageError("Instrumentation is not correctly configured.");
 	}

@@ -2,11 +2,7 @@ package com.taobao.android.ski;
 
 import static android.content.pm.PackageManager.GET_INSTRUMENTATION;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
-
-import com.taobao.android.ski.radar.ActivityPerfMon;
-import com.taobao.android.ski.radar.SysLogMon;
 
 import android.app.Activity;
 import android.app.Instrumentation;
@@ -24,10 +20,15 @@ import android.os.Debug;
 import android.os.Environment;
 import android.util.Log;
 
+import com.taobao.android.ski.radar.AnimationPerfMon;
+import com.taobao.android.ski.radar.SysLogMon;
+
 /** @author Oasis */
 public class Dock extends Instrumentation {
 
 	public static final String KEY_FLAGS = "flags";
+	public static final String KEY_ATTACH_DEBUGGER = "attach-debugger";
+
 	public static final int FLAG_LAUNCH_TIMING = 1 << 0;
 	public static final int FLAG_LAUNCH_PROFILING = 1 << 1;
 	public static final int FLAG_MONITOR_ANIMATION_PERF = 1 << 2;
@@ -46,18 +47,19 @@ public class Dock extends Instrumentation {
 	}
 
 	@Override public void onCreate(final Bundle arguments) {
+		if (arguments.getBoolean(KEY_ATTACH_DEBUGGER)) Debug.waitForDebugger();
 		super.onCreate(arguments);
+
 		mFlags = arguments == null ? 0 : arguments.getInt(KEY_FLAGS, 0);
 
-//		if ((mFlags & FLAG_MONITOR_ANIMATION_PERF) == 0)
-//			AnimationPerfMon.install(getTargetContext(), 15);
+		if ((mFlags & FLAG_MONITOR_ANIMATION_PERF) != 0)
+			AnimationPerfMon.install(getTargetContext(), 15);
 
 		start();
 	}
 
 	@Override public void onStart() {
 		super.onStart();
-		Debug.waitForDebugger();
 		final PackageManager pm = getContext().getPackageManager();
 		String target_pkg;
 		try {
