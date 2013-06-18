@@ -4,18 +4,25 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Looper;
+import android.preference.PreferenceManager;
 
 /**
- * Use apply() when commit() is called on main thread.
+ * Utilities for better shared preferences performance.
  *
  * @author Oasis
  */
 public class FastSharedPreferences {
+
+	/** Always use default instance to benefit the shared cache. */
+	public static SharedPreferences getDefault(Context context) {
+		return PreferenceManager.getDefaultSharedPreferences(context);
+	}
 
 	/** Wrap existent SharedPreferences instance to apply the optimization */
 	public static SharedPreferences wrap(final SharedPreferences prefs) {
