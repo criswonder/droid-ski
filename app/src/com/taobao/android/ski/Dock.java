@@ -100,7 +100,7 @@ public class Dock extends Instrumentation {
 
 //		SysLogMon.stop();
 		
-		Toto.get(this.getTargetContext()).showCustomToast("test");
+		Toto.get(this.getTargetContext()).showToast("Load finish");
 	}
 
 	@Override public void callActivityOnResume(Activity activity) {
