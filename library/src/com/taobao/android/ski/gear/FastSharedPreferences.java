@@ -21,12 +21,12 @@ public class FastSharedPreferences {
 
 	/** Always use default instance to benefit the shared cache. */
 	public static SharedPreferences getDefault(Context context) {
-		return PreferenceManager.getDefaultSharedPreferences(context);
+		return wrap(PreferenceManager.getDefaultSharedPreferences(context));
 	}
 
 	/** Wrap existent SharedPreferences instance to apply the optimization */
 	public static SharedPreferences wrap(final SharedPreferences prefs) {
-		if (Build.VERSION.SDK_INT < VERSION_CODES.GINGERBREAD) return prefs;	// No "apply()" before Gingerbread.
+		if (mMethodApply == null) return prefs;			// No "apply()" method
 
 		if (Proxy.isProxyClass(prefs.getClass()))
 			throw new IllegalArgumentException("The SharedPreferences instance is already proxied.");
@@ -35,13 +35,13 @@ public class FastSharedPreferences {
 
 			@Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 				Object result = method.invoke(prefs, args);
-				if (! "edit".equals(method.getName()) || args.length != 0) return result;
+				if (args.length != 0 /* fast first */ || ! "edit".equals(method.getName())) return result;
 
 				final Editor editor = (Editor) result;
 				return Proxy.newProxyInstance(prefs.getClass().getClassLoader(), new Class<?>[] { Editor.class }, new InvocationHandler() {
 					
 					@Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-						if ("commit".equals(method.getName()) && args.length == 0
+						if (args.length == 0 /* fast first */ && "commit".equals(method.getName()) 
 								&& Thread.currentThread() == Looper.getMainLooper().getThread()) {
 							mMethodApply.invoke(editor);	// Use apply() instead of commit() if running on UI thread.
 							return true;					// Always return "true".
@@ -56,10 +56,10 @@ public class FastSharedPreferences {
 
 	private static final Method mMethodApply;
 	static {
+		Method method = null;
 		try {
-			mMethodApply = Editor.class.getMethod("apply");
-		} catch (NoSuchMethodException e) {
-			throw new NoSuchMethodError(e.getMessage());
-		}
+			method = Build.VERSION.SDK_INT < VERSION_CODES.GINGERBREAD ? null : Editor.class.getMethod("apply");
+		} catch (NoSuchMethodException e) { /* Just ignore for ROM compatibility */ }
+		mMethodApply = method;
 	}
 }
