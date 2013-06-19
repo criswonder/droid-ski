@@ -9,7 +9,6 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
-import android.os.Looper;
 import android.preference.PreferenceManager;
 
 /**
@@ -17,34 +16,38 @@ import android.preference.PreferenceManager;
  *
  * @author Oasis
  */
-public class FastSharedPreferences {
+public class SharedPreferencesCompat {
 
-	/** Always use default instance to benefit the shared cache. */
+	public interface EditorCompat extends SharedPreferences.Editor {
+		@Override public void apply();
+	}
+
+	/** Use default instance to benefit the shared cache. */
 	public static SharedPreferences getDefault(Context context) {
 		return wrap(PreferenceManager.getDefaultSharedPreferences(context));
 	}
 
-	/** Wrap existent SharedPreferences instance to apply the optimization */
+	/** Wrap existent SharedPreferences instance to add "Editor.apply()" method for compatibility. */
 	public static SharedPreferences wrap(final SharedPreferences prefs) {
-		if (mMethodApply == null) return prefs;			// No "apply()" method
+		if (Build.VERSION.SDK_INT >= VERSION_CODES.GINGERBREAD) return prefs;	// Pass-through
 
 		if (Proxy.isProxyClass(prefs.getClass()))
 			throw new IllegalArgumentException("The SharedPreferences instance is already proxied.");
 
-		return (SharedPreferences) Proxy.newProxyInstance(prefs.getClass().getClassLoader(), new Class<?>[] { SharedPreferences.class }, new InvocationHandler() {
+		return (SharedPreferences) Proxy.newProxyInstance(prefs.getClass().getClassLoader(),
+				new Class<?>[] { SharedPreferences.class }, new InvocationHandler() {
 
 			@Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 				Object result = method.invoke(prefs, args);
 				if (args.length != 0 /* fast first */ || ! "edit".equals(method.getName())) return result;
 
 				final Editor editor = (Editor) result;
-				return Proxy.newProxyInstance(prefs.getClass().getClassLoader(), new Class<?>[] { Editor.class }, new InvocationHandler() {
+				return Proxy.newProxyInstance(prefs.getClass().getClassLoader(), new Class<?>[] { EditorCompat.class }, new InvocationHandler() {
 					
 					@Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-						if (args.length == 0 /* fast first */ && "commit".equals(method.getName()) 
-								&& Thread.currentThread() == Looper.getMainLooper().getThread()) {
-							mMethodApply.invoke(editor);	// Use apply() instead of commit() if running on UI thread.
-							return true;					// Always return "true".
+						if (args.length == 0 /* fast first */ && "apply".equals(method.getName())) {
+							editor.commit();		// Use commit() instead
+							return null;
 						}
 						return method.invoke(editor, args);
 					}
@@ -52,14 +55,5 @@ public class FastSharedPreferences {
 				});
 			}
 		});
-	}
-
-	private static final Method mMethodApply;
-	static {
-		Method method = null;
-		try {
-			method = Build.VERSION.SDK_INT < VERSION_CODES.GINGERBREAD ? null : Editor.class.getMethod("apply");
-		} catch (NoSuchMethodException e) { /* Just ignore for ROM compatibility */ }
-		mMethodApply = method;
 	}
 }
