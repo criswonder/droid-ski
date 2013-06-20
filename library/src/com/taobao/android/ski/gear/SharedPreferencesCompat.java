@@ -12,7 +12,7 @@ import android.os.Build.VERSION_CODES;
 import android.preference.PreferenceManager;
 
 /**
- * Utilities for better shared preferences performance.
+ * Provide {@link SharedPreferences.Editor#apply()} for API level ~8.
  *
  * @author Oasis
  */
@@ -22,12 +22,12 @@ public class SharedPreferencesCompat {
 		@Override public void apply();
 	}
 
-	/** Use default instance to benefit the shared cache. */
+	/** Get the default SharedPreferences instance of current package, with compatibility wrap. */
 	public static SharedPreferences getDefault(Context context) {
 		return wrap(PreferenceManager.getDefaultSharedPreferences(context));
 	}
 
-	/** Wrap existent SharedPreferences instance to add "Editor.apply()" method for compatibility. */
+	/** Wrap built-in SharedPreferences instance for compatibility if needed. */
 	public static SharedPreferences wrap(final SharedPreferences prefs) {
 		if (Build.VERSION.SDK_INT >= VERSION_CODES.GINGERBREAD) return prefs;	// Pass-through
 

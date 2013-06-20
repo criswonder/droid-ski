@@ -9,7 +9,8 @@ import android.support.v4.app.FragmentActivity;
 
 /**
  * Backward-compatibility for functionalities of new Android platform versions.
- * MUST be used together with {@link ApplicationCompat}
+ *
+ * <p><b>MUST be used together with {@link ApplicationCompat}</b>
  *
  * @author Oasis
  */

@@ -10,9 +10,16 @@ import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 
-/** @author Oasis */
+/**
+ * Provide activity life-cycle callback APIs for API level ~13.
+ * 
+ * <p><b>This class (or its derivation) MUST be explicitly declared in the AndroidManifest.xml</b>
+ *
+ * @author Oasis
+ */
 public class ApplicationCompat extends Application {
 
+	/** Backward-compatible version of {@link Application.ActivityLifecycleCallbacks} */
     public interface ActivityLifecycleCallbacksCompat {
         void onActivityCreated(Activity activity, Bundle savedInstanceState);
         void onActivityStarted(Activity activity);
@@ -23,7 +30,19 @@ public class ApplicationCompat extends Application {
         void onActivityDestroyed(Activity activity);
     }
 
-	@Override public SharedPreferences getSharedPreferences(String name, int mode) {
+    /** Empty implementation of {@link ActivityLifecycleCallbacksCompat} for subset overriding */
+    public static class AbstractActivityLifecycleCallbacks implements ActivityLifecycleCallbacksCompat {
+
+		@Override public void onActivityCreated(Activity activity, Bundle savedInstanceState) {}
+		@Override public void onActivityStarted(Activity activity) {}
+		@Override public void onActivityResumed(Activity activity) {}
+		@Override public void onActivityPaused(Activity activity) {}
+		@Override public void onActivityStopped(Activity activity) {}
+		@Override public void onActivitySaveInstanceState(Activity activity, Bundle outState) {}
+		@Override public void onActivityDestroyed(Activity activity) {}
+    }
+
+    @Override public SharedPreferences getSharedPreferences(String name, int mode) {
 		return SharedPreferencesCompat.wrap(super.getSharedPreferences(name, mode));
 	}
 
@@ -40,7 +59,6 @@ public class ApplicationCompat extends Application {
     /** Provide this method for pre-ICS */
 	@TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 	public void unregisterActivityLifecycleCallbacks(ActivityLifecycleCallbacksCompat callback) {
-		// TODO Auto-generated method stub
 		if (Build.VERSION.SDK_INT >= VERSION_CODES.ICE_CREAM_SANDWICH) {
 			super.unregisterActivityLifecycleCallbacks(new ActivityLifecycleCallbacksWrapper(callback));
 		} else synchronized (mActivityLifecycleCallbacks) {
