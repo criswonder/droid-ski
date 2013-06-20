@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Application;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
@@ -22,39 +23,36 @@ public class AbstractApplicationCompat extends Application {
         void onActivityDestroyed(Activity activity);
     }
 
-    @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-	private class ActivityLifecycleCallbacksWrapper implements ActivityLifecycleCallbacks {
-
-    	private ActivityLifecycleCallbacksWrapper(ActivityLifecycleCallbacksCompat compat) { mCompat = compat; }
-    	@Override public void onActivityCreated(Activity activity, Bundle savedInstanceState) { mCompat.onActivityCreated(activity, savedInstanceState); }
-		@Override public void onActivityStarted(Activity activity) { mCompat.onActivityStarted(activity); }
-		@Override public void onActivityResumed(Activity activity) { mCompat.onActivityResumed(activity); }
-		@Override public void onActivityPaused(Activity activity) { mCompat.onActivityPaused(activity); }
-		@Override public void onActivityStopped(Activity activity) { mCompat.onActivityStopped(activity); }
-		@Override public void onActivitySaveInstanceState(Activity activity, Bundle outState) { mCompat.onActivitySaveInstanceState(activity, outState); }
-		@Override public void onActivityDestroyed(Activity activity) { mCompat.onActivityDestroyed(activity); }
-
-    	private final ActivityLifecycleCallbacksCompat mCompat;
-    }
+	@Override public SharedPreferences getSharedPreferences(String name, int mode) {
+		return SharedPreferencesCompat.wrap(super.getSharedPreferences(name, mode));
+	}
 
     /** Provide this method for pre-ICS */
 	@TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 	public void registerActivityLifecycleCallbacks(ActivityLifecycleCallbacksCompat callback) {
-		if (Build.VERSION.SDK_INT < VERSION_CODES.ICE_CREAM_SANDWICH) {
-	        synchronized (mActivityLifecycleCallbacks) {
-	            mActivityLifecycleCallbacks.add(callback);
-	        }
-		} else
+		if (Build.VERSION.SDK_INT >= VERSION_CODES.ICE_CREAM_SANDWICH) {
 			super.registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacksWrapper(callback));
+		} else synchronized (mActivityLifecycleCallbacks) {
+            mActivityLifecycleCallbacks.add(callback);
+        }
+	}
 
+    /** Provide this method for pre-ICS */
+	@TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+	public void unregisterActivityLifecycleCallbacks(ActivityLifecycleCallbacksCompat callback) {
+		// TODO Auto-generated method stub
+		if (Build.VERSION.SDK_INT >= VERSION_CODES.ICE_CREAM_SANDWICH) {
+			super.unregisterActivityLifecycleCallbacks(new ActivityLifecycleCallbacksWrapper(callback));
+		} else synchronized (mActivityLifecycleCallbacks) {
+            mActivityLifecycleCallbacks.remove(callback);
+        }
 	}
 
 	/* package */ void dispatchActivityCreated(Activity activity, Bundle savedInstanceState) {
 		ActivityLifecycleCallbacksCompat[] callbacks = collectActivityLifecycleCallbacks();
         if (callbacks != null) {
             for (int i=0; i<callbacks.length; i++) {
-                callbacks[i].onActivityCreated(activity,
-                        savedInstanceState);
+                callbacks[i].onActivityCreated(activity, savedInstanceState);
             }
         }
     }
@@ -124,4 +122,19 @@ public class AbstractApplicationCompat extends Application {
     }
 
     private final ArrayList<ActivityLifecycleCallbacksCompat> mActivityLifecycleCallbacks = new ArrayList<ActivityLifecycleCallbacksCompat>();
+
+    @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+	private class ActivityLifecycleCallbacksWrapper implements ActivityLifecycleCallbacks {
+
+    	private ActivityLifecycleCallbacksWrapper(ActivityLifecycleCallbacksCompat compat) { mCompat = compat; }
+    	@Override public void onActivityCreated(Activity activity, Bundle savedInstanceState) { mCompat.onActivityCreated(activity, savedInstanceState); }
+		@Override public void onActivityStarted(Activity activity) { mCompat.onActivityStarted(activity); }
+		@Override public void onActivityResumed(Activity activity) { mCompat.onActivityResumed(activity); }
+		@Override public void onActivityPaused(Activity activity) { mCompat.onActivityPaused(activity); }
+		@Override public void onActivityStopped(Activity activity) { mCompat.onActivityStopped(activity); }
+		@Override public void onActivitySaveInstanceState(Activity activity, Bundle outState) { mCompat.onActivitySaveInstanceState(activity, outState); }
+		@Override public void onActivityDestroyed(Activity activity) { mCompat.onActivityDestroyed(activity); }
+
+    	private final ActivityLifecycleCallbacksCompat mCompat;
+    }
 }
