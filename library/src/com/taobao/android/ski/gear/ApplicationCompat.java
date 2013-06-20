@@ -11,7 +11,7 @@ import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 
 /** @author Oasis */
-public class AbstractApplicationCompat extends Application {
+public class ApplicationCompat extends Application {
 
     public interface ActivityLifecycleCallbacksCompat {
         void onActivityCreated(Activity activity, Bundle savedInstanceState);
