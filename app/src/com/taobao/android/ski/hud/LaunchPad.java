@@ -28,6 +28,17 @@ public class LaunchPad extends Activity {
 	}
 
 	private void start(int flags) {
+		
+		ToggleButton actbut = (ToggleButton)findViewById(R.id.activityperfbutton);
+		if(actbut.isChecked()) {
+			flags = flags | Dock.FLAG_MONITOR_ACTIVITY_PERF;
+		}
+		
+		ToggleButton anibut = (ToggleButton)findViewById(R.id.animationperfbutton);
+		if(anibut.isChecked()) {
+			flags = flags | Dock.FLAG_MONITOR_ANIMATION_PERF;
+		}
+		
 		Bundle options = new Bundle();
 		options.putInt(Dock.KEY_FLAGS, flags);
 		if (Debug.isDebuggerConnected()) options.putBoolean(Dock.KEY_ATTACH_DEBUGGER, true);
@@ -41,7 +52,7 @@ public class LaunchPad extends Activity {
 			options.putInt(Dock.KEY_THREASHOLD, 5);
 		}
 		
-		ToggleButton tbut = (ToggleButton)findViewById(R.id.togglebutton);
+		ToggleButton tbut = (ToggleButton)findViewById(R.id.strictmodebutton);
 		boolean result = false;
 		if(tbut.isChecked()) {
 			result = startInstrumentation(new ComponentName(this, DockForStrictMode.class), null, options);

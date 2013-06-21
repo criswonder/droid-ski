@@ -21,8 +21,8 @@ import android.os.Environment;
 import android.util.Log;
 
 import com.taobao.android.ski.hud.Toto;
+import com.taobao.android.ski.radar.ActivityPerfMon;
 import com.taobao.android.ski.radar.AnimationPerfMon;
-import com.taobao.android.ski.radar.StrictModeMon;
 import com.taobao.android.ski.radar.SysLogMon;
 
 /** @author Oasis */
@@ -34,8 +34,10 @@ public class Dock extends Instrumentation {
 	public static final int FLAG_LAUNCH_TIMING = 1 << 0;
 	public static final int FLAG_LAUNCH_PROFILING = 1 << 1;
 	public static final int FLAG_MONITOR_ANIMATION_PERF = 1 << 2;
+	public static final int FLAG_MONITOR_ACTIVITY_PERF = 1 << 3;
 	
 	public static final String KEY_THREASHOLD = "choreographer";
+
 
 	public static Dock getInstrumentationOf(Activity activity) {
 		try {
@@ -59,10 +61,10 @@ public class Dock extends Instrumentation {
 			AnimationPerfMon.install(getTargetContext(), 15);
 
 		mThreshold = arguments == null ? 5 : arguments.getInt(KEY_THREASHOLD, 5);
-		
-//		if ((mFlags & FLAG_MONITOR_ANIMATION_PERF) == 0)
-//			AnimationPerfMon.install(getTargetContext(), 15);
 
+		if ((mFlags & FLAG_MONITOR_ACTIVITY_PERF) == 0)
+			ActivityPerfMon.install(getTargetContext(), 100);
+		
 		start();
 	}
 
@@ -100,7 +102,9 @@ public class Dock extends Instrumentation {
 
 //		SysLogMon.stop();
 		
-		Toto.get(this.getTargetContext()).showToast("Load finish");
+
+		
+		Toto.get(this.getTargetContext()).showToast("Ski Load finish");
 	}
 
 	@Override public void callActivityOnResume(Activity activity) {
