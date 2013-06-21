@@ -152,7 +152,15 @@ public class ApplicationCompat extends Application {
 		@Override public void onActivityStopped(Activity activity) { mCompat.onActivityStopped(activity); }
 		@Override public void onActivitySaveInstanceState(Activity activity, Bundle outState) { mCompat.onActivitySaveInstanceState(activity, outState); }
 		@Override public void onActivityDestroyed(Activity activity) { mCompat.onActivityDestroyed(activity); }
+		
+    	@Override public int hashCode() { return mCompat.hashCode(); }
 
-    	private final ActivityLifecycleCallbacksCompat mCompat;
+    	@Override public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (! (obj instanceof ActivityLifecycleCallbacksWrapper)) return false;
+			return ((ActivityLifecycleCallbacksWrapper) obj).mCompat == mCompat;
+		}
+
+		private final ActivityLifecycleCallbacksCompat mCompat;
     }
 }
