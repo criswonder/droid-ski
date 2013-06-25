@@ -36,6 +36,7 @@ public class Dock extends Instrumentation {
 	public static final int FLAG_MONITOR_ANIMATION_PERF = 1 << 2;
 	public static final int FLAG_MONITOR_ACTIVITY_PERF = 1 << 3;
 	
+	public static final String KEY_ACTIVITY_LAUNCH_TIME = "am_launch_time";
 	public static final String KEY_THREASHOLD = "choreographer";
 
 
@@ -62,9 +63,10 @@ public class Dock extends Instrumentation {
 
 		mThreshold = arguments == null ? 5 : arguments.getInt(KEY_THREASHOLD, 5);
 
-		if ((mFlags & FLAG_MONITOR_ACTIVITY_PERF) == 0)
-			ActivityPerfMon.install(getTargetContext(), 100);
-		
+		if ((mFlags & FLAG_MONITOR_ACTIVITY_PERF) != 0){
+			int launchtime = arguments == null ? 500 : arguments.getInt(KEY_ACTIVITY_LAUNCH_TIME, 500);
+			ActivityPerfMon.install(getTargetContext(), launchtime);
+		}
 		start();
 	}
 

@@ -24,8 +24,8 @@ public class ActivityPerfMon {
 	private static final long PATROL_INTERVAL = 3000;
 
 	public static void install(final Context context, final long threashold_ms) {
-	    if (PERMISSION_GRANTED != context.getPackageManager().checkPermission(READ_LOGS, context.getPackageName()))
-	        throw new IllegalStateException("Permission not granted: " + READ_LOGS);
+//	    if (PERMISSION_GRANTED != context.getPackageManager().checkPermission(READ_LOGS, context.getPackageName()))
+//	        throw new IllegalStateException(context.getPackageName() + " Permission not granted: " + READ_LOGS);
 
 	    mAppContext = context.getApplicationContext();
 		mYell = Yell.get(context);
@@ -55,6 +55,7 @@ public class ActivityPerfMon {
 			if (! self_pkg.equals(component.getPackageName())) continue;
 
 			final long duration = (Long) data[idx + 1];
+			Log.v(TAG, component.getShortClassName()+":"+duration);
 			if (duration > mThreshold)
 			    mYell.showNotification(TAG, "Too slow loading activity", duration + "ms " + component.getShortClassName());
 		}

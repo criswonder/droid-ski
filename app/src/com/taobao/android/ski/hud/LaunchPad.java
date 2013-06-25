@@ -29,11 +29,13 @@ public class LaunchPad extends Activity {
 
 	private void start(int flags) {
 		
+		//activity perf switch
 		ToggleButton actbut = (ToggleButton)findViewById(R.id.activityperfbutton);
 		if(actbut.isChecked()) {
 			flags = flags | Dock.FLAG_MONITOR_ACTIVITY_PERF;
 		}
 		
+		//animation perf switch
 		ToggleButton anibut = (ToggleButton)findViewById(R.id.animationperfbutton);
 		if(anibut.isChecked()) {
 			flags = flags | Dock.FLAG_MONITOR_ANIMATION_PERF;
@@ -42,6 +44,18 @@ public class LaunchPad extends Activity {
 		Bundle options = new Bundle();
 		options.putInt(Dock.KEY_FLAGS, flags);
 		if (Debug.isDebuggerConnected()) options.putBoolean(Dock.KEY_ATTACH_DEBUGGER, true);
+		
+		//am_lanch_time threashold
+		if(actbut.isChecked()) {
+			EditText launch_time = (EditText)findViewById(R.id.launch_time);
+			String thd = launch_time.getText().toString().trim();
+			try {
+				int thdint = Integer.parseInt(thd);
+				options.putInt(Dock.KEY_ACTIVITY_LAUNCH_TIME, thdint);
+			} catch (NumberFormatException e){
+				options.putInt(Dock.KEY_ACTIVITY_LAUNCH_TIME, 500);
+			}
+		}
 		
 		EditText threashold = (EditText)findViewById(R.id.edit_content);
 		String thd = threashold.getText().toString().trim();

@@ -6,13 +6,37 @@
     android:gravity="bottom"
     android:orientation="vertical" >
 
-    <ToggleButton 
-    	android:id="@+id/activityperfbutton"
-    	android:layout_width="wrap_content"
-    	android:layout_height="wrap_content"
-    	android:textOn="ActivityPerf on"
-    	android:textOff="ActivityPerf off"
-    	android:gravity="center_horizontal"/>
+    <RelativeLayout 
+        android:id="@+id/activity_perf"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal" >
+	    <ToggleButton 
+	    	android:id="@+id/activityperfbutton"
+	    	android:layout_width="wrap_content"
+	    	android:layout_height="wrap_content"
+	    	android:textOn="ActivityPerf on"
+	    	android:textOff="ActivityPerf off"
+	    	android:gravity="center_horizontal"/>
+	    
+	    <TextView
+            android:id="@+id/launch_intro"
+            android:layout_toRightOf="@id/activityperfbutton"
+			android:text="launch_time(ms)："
+			android:layout_centerVertical="true"
+        	android:layout_width="wrap_content"
+        	android:layout_height="wrap_content" >
+            
+        </TextView>
+
+        <EditText 
+            android:id="@+id/launch_time"
+            android:layout_toRightOf="@id/launch_intro"
+        	android:layout_width="wrap_content"
+        	android:layout_height="wrap_content"
+        	android:text="500" />
+	    
+    </RelativeLayout>
     
     <ToggleButton 
     	android:id="@+id/animationperfbutton"
