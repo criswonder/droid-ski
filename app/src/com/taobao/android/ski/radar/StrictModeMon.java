@@ -1,7 +1,9 @@
 package com.taobao.android.ski.radar;
 
+import java.io.BufferedReader;
 import java.io.File;
-import java.lang.reflect.Constructor;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -9,6 +11,8 @@ import java.util.Arrays;
 
 import android.app.Instrumentation;
 import android.content.Context;
+import android.os.AsyncTask;
+import android.os.DropBoxManager;
 import android.os.StrictMode;
 import android.util.Log;
 
@@ -19,22 +23,43 @@ import com.google.dexmaker.stock.ProxyBuilder;
 /** @author hwjump */
 public class StrictModeMon {
 
+	public static class StrictModeTask extends AsyncTask<Void, Void, Void> {
+
+		
+//		public StrictModeTask(Context context){
+//			
+//		}
+
+		@Override
+		protected Void doInBackground(Void... params) {
+			
+//			DropBoxManager dropbox = (DropBoxManager) mInstrumentation.getTargetContext().getSystemService(Context.DROPBOX_SERVICE);
+//			dropbox.getNextEntry(tag, msec)
+//			
+//			dropbox.
+//			
+			return null;
+		}
+	}
+	
+	
 	public static void start(Instrumentation instr) {
 
 		StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
 				.detectAll().penaltyFlashScreen().build());
 
 		StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
-				.detectLeakedSqlLiteObjects().detectLeakedClosableObjects()
-				.penaltyLog().penaltyDeath().build());
+				.detectAll().penaltyLog().penaltyDeath().build());
 
-		// todo: 自动监控还有点问题，先屏蔽
+//		new StrictModeTask().execute();
+		// todo:
 		// mInstrumentation = instr;
 		// init();
 	}
 
-	private static void init() {
+	public static void init(Instrumentation instr) {
 
+		mInstrumentation = instr;
 		InvocationHandler handler = new InvocationHandler() {
 
 			@Override
@@ -58,8 +83,12 @@ public class StrictModeMon {
 			DexMaker dexMaker = new DexMaker();
 			TypeId<?> AndroidBlockGuardPolicyEx = TypeId
 					.get("Landroid/os/StrictMode$AndroidBlockGuardPolicyEx;");
+			
+			Class<?> androidBlockGuardPolicy = Class
+					.forName("android.os.StrictMode$AndroidBlockGuardPolicy");
+			
 			TypeId<?> AndroidBlockGuardPolicy = TypeId
-					.get("Landroid/os/StrictMode$AndroidBlockGuardPolicy;");
+					.get(androidBlockGuardPolicy);
 
 			dexMaker.declare(AndroidBlockGuardPolicyEx,
 					"AndroidBlockGuardPolicy.generated", Modifier.PUBLIC,
@@ -73,8 +102,7 @@ public class StrictModeMon {
 			Class<?> AndroidBlockGuardPolicyExClass = loader
 					.loadClass("android.os.StrictMode$AndroidBlockGuardPolicyEx");
 
-			Class<?> androidBlockGuardPolicy = Class
-					.forName("android.os.StrictMode$AndroidBlockGuardPolicy");
+
 
 			File file = mInstrumentation.getTargetContext().getDir("dx",
 					Context.MODE_PRIVATE);

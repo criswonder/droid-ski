@@ -2,8 +2,11 @@ package com.taobao.android.ski.hud;
 
 import android.app.Activity;
 import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Debug;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.EditText;
@@ -16,6 +19,7 @@ import com.taobao.android.ski.R;
 /** @author Oasis */
 public class LaunchPad extends Activity {
 
+	private Context mContext;
 	@Override protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.launchpad);
@@ -25,6 +29,15 @@ public class LaunchPad extends Activity {
 		findViewById(R.id.launch_profiling).setOnClickListener(new OnClickListener() { @Override public void onClick(View v) {
 			start(Dock.FLAG_LAUNCH_PROFILING);
 		}});
+		
+		mContext = this;
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		
+		
 	}
 
 	private void start(int flags) {

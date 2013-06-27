@@ -57,6 +57,7 @@ public final class AnimationPerfMon {
 	private class LooperMonitor implements Printer {
 
 		@Override public void println(String log) {
+
 			if (log.charAt(0) == '>' && log.length() > MATCH_PREFIX_LENGTH
 					&& log.substring(MATCH_PREFIX_LENGTH).startsWith(FRAME_HANDLER_NAME)) try {		// Before message delivery
 				if (mScheduled) {
@@ -72,5 +73,5 @@ public final class AnimationPerfMon {
 		private boolean mScheduled = false;
 	}
 	
-	private class X extends LooperMonitor {}
+	private static final String TAG = "AnimationPerf";
 }
