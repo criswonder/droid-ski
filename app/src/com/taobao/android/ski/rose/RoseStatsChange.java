@@ -1,10 +1,11 @@
 
 package com.taobao.android.ski.rose;
 
+import android.graphics.Rect;
+
 public interface RoseStatsChange {
 	
     public void notifyDataSetChange();
 
-    public int getTextWidth(String text);
-    public int getTextHeight(String text);
+    public Rect getTextRect(String text);
 }

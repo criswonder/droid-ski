@@ -23,6 +23,8 @@ import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
+import android.graphics.Point;
+import android.graphics.Rect;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -31,13 +33,13 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
 
-public class RoseService extends Service implements RoseStatsChange{
+public class RoseService extends Service {
     
 	private static final int UPDATE_MSG = 1;
 	
 	private LoadView mView;
     
-    public class LoadView extends View {
+    public class LoadView extends View  implements RoseStatsChange{
         private Handler mHandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
@@ -47,9 +49,22 @@ public class RoseService extends Service implements RoseStatsChange{
             }
         };
         
-        public Handler getHandler(){
-        	return mHandler;
-        }
+    	@Override
+    	public void notifyDataSetChange() {
+            Message m = mHandler.obtainMessage(UPDATE_MSG);
+            mHandler.sendMessage(m);
+    	}
+
+    	@Override
+    	public Rect getTextRect(String text) {
+    		Rect rect = new Rect();  
+    		mNormalPaint.getTextBounds(text, 0, text.length(), rect);  
+    		int w = rect.width();  
+    		int h = rect.height();  
+    		Log.d(TAG, "w=" +w+"  h="+h);
+    		
+    		return rect;
+    	}
         
         private Paint mNormalPaint;
         private Paint mShadowPaint;
@@ -111,19 +126,20 @@ public class RoseService extends Service implements RoseStatsChange{
             mNormalPaint.setShadowLayer(2, 0, 0, 0xff000000);
 
             RoseStatsCenter.instance().init();
+            RoseStatsCenter.instance().setRoseStatsChange(this);
             updateDisplay();
         }
 
         @Override
         protected void onAttachedToWindow() {
             super.onAttachedToWindow();
-            mHandler.sendEmptyMessage(1);
+            mHandler.sendEmptyMessage(UPDATE_MSG);
         }
 
         @Override
         protected void onDetachedFromWindow() {
             super.onDetachedFromWindow();
-            mHandler.removeMessages(1);
+            mHandler.removeMessages(UPDATE_MSG);
         }
 
         @Override
@@ -206,23 +222,4 @@ public class RoseService extends Service implements RoseStatsChange{
     
     private final static String TAG = "RoseService";
 
-
-	@Override
-	public void notifyDataSetChange() {
-		Handler handler = mView.getHandler();
-        Message m = handler.obtainMessage(UPDATE_MSG);
-        handler.sendMessage(m);
-	}
-
-	@Override
-	public int getTextWidth(String text) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public int getTextHeight(String text) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
 }

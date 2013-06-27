@@ -3,10 +3,16 @@ package com.taobao.android.ski.rose;
 
 import java.util.ArrayList;
 
+import android.graphics.Rect;
+
 
 public class RoseStatsCenter {
 	
     private static final String TAG = "RoseStatsCenter";
+    
+    public static final int LEVEL_ERROR = 1;
+    public static final int LEVEL_WARN = 2;
+    public static final int LEVEL_VERBOSE = 3;
         
     public static class Stats {
         public int level;
@@ -34,7 +40,7 @@ public class RoseStatsCenter {
     	stat.level = level;
     	stat.name = name;
     	stat.content = content;
-    	
+
     	mStats.add(stat);
     	
     	mOberver.notifyDataSetChange();
@@ -49,8 +55,31 @@ public class RoseStatsCenter {
     }
     
     public void update() {
+
     	if(mOberver != null) {
-    		mOberver.notifyDataSetChange();
+
+    		int maxWidth = 0;
+    		int allHeight = 0;
+	    	if(mStats.size() > 0){
+	    		
+	    		for(Stats stat : mStats) {
+	    			
+	    			Rect rectname = mOberver.getTextRect(stat.name);
+	    			stat.nameWidth = rectname.width();
+	    			
+	    			
+	    			
+	    			Rect rectcont = mOberver.getTextRect(stat.content);
+	    			stat.contentWidth = rectcont.width();
+	    			stat.contentHeight = rectcont.height();
+	    			
+	    			 
+	    		}
+
+	    		mOberver.notifyDataSetChange();
+        	}
     	}
     }
+    
+    
 }
