@@ -5,14 +5,15 @@ import java.util.ArrayList;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Application;
-import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 
+import com.taobao.android.ski.gear.SharedPreferencesCompat.SharedPreferencesWrapper;
+
 /**
  * Provide activity life-cycle callback APIs for API level ~13.
- * 
+ *
  * <p><b>This class (or its derivation) MUST be explicitly declared in the AndroidManifest.xml</b>
  *
  * @author Oasis
@@ -42,11 +43,11 @@ public class ApplicationCompat extends Application {
 		@Override public void onActivityDestroyed(Activity activity) {}
     }
 
-    @Override public SharedPreferences getSharedPreferences(String name, int mode) {
-		return SharedPreferencesCompat.wrap(super.getSharedPreferences(name, mode));
+    public SharedPreferencesCompat getSharedPreferencesCompat(String name, int mode) {
+		return new SharedPreferencesWrapper(super.getSharedPreferences(name, mode));
 	}
 
-    /** Provide this method for pre-ICS */
+    /** Provide this method for API level ~13 */
 	@TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 	public void registerActivityLifecycleCallbacks(ActivityLifecycleCallbacksCompat callback) {
 		if (Build.VERSION.SDK_INT >= VERSION_CODES.ICE_CREAM_SANDWICH) {
@@ -56,7 +57,7 @@ public class ApplicationCompat extends Application {
         }
 	}
 
-    /** Provide this method for pre-ICS */
+    /** Provide this method for API level ~13 */
 	@TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 	public void unregisterActivityLifecycleCallbacks(ActivityLifecycleCallbacksCompat callback) {
 		if (Build.VERSION.SDK_INT >= VERSION_CODES.ICE_CREAM_SANDWICH) {
@@ -144,7 +145,6 @@ public class ApplicationCompat extends Application {
     @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 	private class ActivityLifecycleCallbacksWrapper implements ActivityLifecycleCallbacks {
 
-    	private ActivityLifecycleCallbacksWrapper(ActivityLifecycleCallbacksCompat compat) { mCompat = compat; }
     	@Override public void onActivityCreated(Activity activity, Bundle savedInstanceState) { mCompat.onActivityCreated(activity, savedInstanceState); }
 		@Override public void onActivityStarted(Activity activity) { mCompat.onActivityStarted(activity); }
 		@Override public void onActivityResumed(Activity activity) { mCompat.onActivityResumed(activity); }
@@ -152,15 +152,20 @@ public class ApplicationCompat extends Application {
 		@Override public void onActivityStopped(Activity activity) { mCompat.onActivityStopped(activity); }
 		@Override public void onActivitySaveInstanceState(Activity activity, Bundle outState) { mCompat.onActivitySaveInstanceState(activity, outState); }
 		@Override public void onActivityDestroyed(Activity activity) { mCompat.onActivityDestroyed(activity); }
-		
+
     	@Override public int hashCode() { return mCompat.hashCode(); }
 
     	@Override public boolean equals(Object obj) {
 			if (this == obj) return true;
 			if (! (obj instanceof ActivityLifecycleCallbacksWrapper)) return false;
-			return ((ActivityLifecycleCallbacksWrapper) obj).mCompat == mCompat;
+			return mCompat.equals(((ActivityLifecycleCallbacksWrapper) obj).mCompat);
 		}
 
-		private final ActivityLifecycleCallbacksCompat mCompat;
+    	private ActivityLifecycleCallbacksWrapper(ActivityLifecycleCallbacksCompat compat) {
+    		if (compat == null) throw new NullPointerException();
+    		mCompat = compat;
+    	}
+
+    	private final ActivityLifecycleCallbacksCompat mCompat;
     }
 }
