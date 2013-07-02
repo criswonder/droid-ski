@@ -24,6 +24,8 @@ import com.taobao.android.ski.hud.Toto;
 import com.taobao.android.ski.radar.ActivityPerfMon;
 import com.taobao.android.ski.radar.AnimationPerfMon;
 import com.taobao.android.ski.radar.SysLogMon;
+import com.taobao.android.ski.rose.RoseService;
+import com.taobao.android.ski.rose.RoseServiceConnection;
 
 /** @author Oasis */
 public class Dock extends Instrumentation {
@@ -103,9 +105,7 @@ public class Dock extends Instrumentation {
 		if ((mFlags & FLAG_LAUNCH_TIMING) != 0) notify("App Start Time", duration + "ms");
 
 //		SysLogMon.stop();
-		
-		DockForStrictMode a = (DockForStrictMode)this;
-		a.sayHello();
+		RoseServiceConnection.helloRose(RoseService.ROSE_LEVEL_VERBOSE, "hello rose!");
 		
 		Toto.get(this.getTargetContext()).showToast("Ski Load finish");
 		
