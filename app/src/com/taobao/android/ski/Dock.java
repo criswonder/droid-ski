@@ -104,9 +104,11 @@ public class Dock extends Instrumentation {
 
 //		SysLogMon.stop();
 		
-
+		DockForStrictMode a = (DockForStrictMode)this;
+		a.sayHello();
 		
 		Toto.get(this.getTargetContext()).showToast("Ski Load finish");
+		
 	}
 
 	@Override public void callActivityOnResume(Activity activity) {

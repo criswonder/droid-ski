@@ -23,48 +23,39 @@ import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
-import android.graphics.Point;
 import android.graphics.Rect;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.Messenger;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 public class RoseService extends Service {
     
-	private static final int UPDATE_MSG = 1;
+	public static final int UPDATE_VIEW_MSG = 1;
+	public static final int SEND_MSG = 2;
+
+	public static final int ROSE_LEVEL_ERROR = 1;
+	public static final int ROSE_LEVEL_WARN = 2;
+	public static final int ROSE_LEVEL_VERBOSE = 3;
 	
 	private LoadView mView;
     
-    public class LoadView extends View  implements RoseStatsChange{
+    public class LoadView extends View {
         private Handler mHandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
-                if (msg.what == UPDATE_MSG) {
+                if (msg.what == UPDATE_VIEW_MSG) {
                     updateDisplay();
                 }
             }
         };
-        
-    	@Override
-    	public void notifyDataSetChange() {
-            Message m = mHandler.obtainMessage(UPDATE_MSG);
-            mHandler.sendMessage(m);
-    	}
-
-    	@Override
-    	public Rect getTextRect(String text) {
-    		Rect rect = new Rect();  
-    		mNormalPaint.getTextBounds(text, 0, text.length(), rect);  
-    		int w = rect.width();  
-    		int h = rect.height();  
-    		Log.d(TAG, "w=" +w+"  h="+h);
-    		
-    		return rect;
-    	}
         
         private Paint mNormalPaint;
         private Paint mShadowPaint;
@@ -124,22 +115,20 @@ public class RoseService extends Service {
             //mShadow2Paint.setFakeBoldText(true);
             mShadow2Paint.setARGB(192, 0, 0, 0);
             mNormalPaint.setShadowLayer(2, 0, 0, 0xff000000);
-
-            RoseStatsCenter.instance().init();
-            RoseStatsCenter.instance().setRoseStatsChange(this);
+            
             updateDisplay();
         }
 
         @Override
         protected void onAttachedToWindow() {
             super.onAttachedToWindow();
-            mHandler.sendEmptyMessage(UPDATE_MSG);
+            mHandler.sendEmptyMessage(UPDATE_VIEW_MSG);
         }
 
         @Override
         protected void onDetachedFromWindow() {
             super.onDetachedFromWindow();
-            mHandler.removeMessages(UPDATE_MSG);
+            mHandler.removeMessages(UPDATE_VIEW_MSG);
         }
 
         @Override
@@ -155,21 +144,20 @@ public class RoseService extends Service {
             final int W = mNeededWidth;
             final int RIGHT = getWidth()-1;
 
-            int x = RIGHT - 4;
-            int top = 4 + 2;
-            int bottom = 4 + 2;
-
             int y = 4;
-            canvas.drawText("hahah", RIGHT-4-100-1,
-                    y-1, mShadowPaint);
-            canvas.drawText("hahah", RIGHT-4-100-1,
-                    y+1, mShadowPaint);
-            canvas.drawText("hahah", RIGHT-4-100+1,
-                    y-1, mShadow2Paint);
-            canvas.drawText("hahah", RIGHT-4-100+1,
-                    y+1, mShadow2Paint);
-            canvas.drawText("hahah", RIGHT-4-100,
-                    y, mNormalPaint);
+            String text = "";
+            if(!TextUtils.isEmpty(text)) {
+                canvas.drawText(text, RIGHT-4-W-1,
+                        y-1, mShadowPaint);
+                canvas.drawText(text, RIGHT-4-W-1,
+                        y+1, mShadowPaint);
+                canvas.drawText(text, RIGHT-4-W+1,
+                        y-1, mShadow2Paint);
+                canvas.drawText(text, RIGHT-4-W+1,
+                        y+1, mShadow2Paint);
+                canvas.drawText(text, RIGHT-4-W,
+                        y, mNormalPaint);
+            }
         }
 
         void updateDisplay() {
@@ -207,17 +195,47 @@ public class RoseService extends Service {
         WindowManager wm = (WindowManager)getSystemService(WINDOW_SERVICE);
         wm.addView(mView, params);
     }
+    
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		Log.v(TAG, "onStartCommand");
+		return super.onStartCommand(intent, flags, startId);
+	}
 
-    @Override
+	@Override
     public void onDestroy() {
+		Log.v(TAG, "onDestroy");
         super.onDestroy();
         ((WindowManager)getSystemService(WINDOW_SERVICE)).removeView(mView);
         mView = null;
     }
 
+    /**
+     * Handler of incoming messages from clients.
+     */
+    class IncomingHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case SEND_MSG:
+                	Bundle bundle = (Bundle)msg.obj;
+                    Toast.makeText(getApplicationContext(), bundle.getString("Text"), Toast.LENGTH_SHORT).show();
+                    break;
+                default:
+                    super.handleMessage(msg);
+            }
+        }
+    }
+    
+    /**
+     * Target we publish for clients to send messages to IncomingHandler.
+     */
+    final Messenger mMessenger = new Messenger(new IncomingHandler());
+    
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+    	Toast.makeText(getApplicationContext(), "binding", Toast.LENGTH_SHORT).show();
+        return mMessenger.getBinder();
     }
     
     private final static String TAG = "RoseService";
