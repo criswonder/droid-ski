@@ -18,7 +18,7 @@ import com.taobao.android.ski.gear.ApplicationCompat.ActivityLifecycleCallbacksC
  */
 public class CrossActivityLifecycle {
 
-	interface CrossActivityLifecycleCallback {
+	public interface CrossActivityLifecycleCallback {
 		/** First activity within this application is created */
         void onCreated(Activity activity);
         /** First activity within this application is started */
