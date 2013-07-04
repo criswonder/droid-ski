@@ -37,38 +37,38 @@ public class FragmentActivityCompat extends FragmentActivity {
 
 	@Override protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		if (COMPAT) getApplicationCompat().dispatchActivityCreated(this, savedInstanceState);
+		if (COMPAT) getApplicationCompat().dispatchActivityCreatedCompat(this, savedInstanceState);
 	}
 
 	@Override protected void onStart() {
 		super.onStart();
-		if (COMPAT) getApplicationCompat().dispatchActivityStarted(this);
+		if (COMPAT) getApplicationCompat().dispatchActivityStartedCompat(this);
 	}
 
 	@Override protected void onResume() {
 		super.onResume();
-		if (COMPAT) getApplicationCompat().dispatchActivityResumed(this);
+		if (COMPAT) getApplicationCompat().dispatchActivityResumedCompat(this);
 	}
 
 	@Override protected void onPause() {
 		super.onPause();
-		if (COMPAT) getApplicationCompat().dispatchActivityPaused(this);
+		if (COMPAT) getApplicationCompat().dispatchActivityPausedCompat(this);
 	}
 
 	@Override protected void onStop() {
 		super.onStop();
-		if (COMPAT) getApplicationCompat().dispatchActivityStopped(this);
+		if (COMPAT) getApplicationCompat().dispatchActivityStoppedCompat(this);
 	}
 
 	@Override protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		if (COMPAT) getApplicationCompat().dispatchActivitySaveInstanceState(this, outState);
+		if (COMPAT) getApplicationCompat().dispatchActivitySaveInstanceStateCompat(this, outState);
 	}
 
 	@Override protected void onDestroy() {
         mDestroyed = true;
 		super.onDestroy();
-		if (COMPAT) getApplicationCompat().dispatchActivityDestroyed(this);
+		if (COMPAT) getApplicationCompat().dispatchActivityDestroyedCompat(this);
 	}
 
 	private ApplicationCompat getApplicationCompat() {

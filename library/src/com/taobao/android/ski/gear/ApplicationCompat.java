@@ -67,7 +67,7 @@ public class ApplicationCompat extends Application {
         }
 	}
 
-	/* package */ void dispatchActivityCreated(Activity activity, Bundle savedInstanceState) {
+	/* package */ void dispatchActivityCreatedCompat(Activity activity, Bundle savedInstanceState) {
 		ActivityLifecycleCallbacksCompat[] callbacks = collectActivityLifecycleCallbacks();
         if (callbacks != null) {
             for (int i=0; i<callbacks.length; i++) {
@@ -76,7 +76,7 @@ public class ApplicationCompat extends Application {
         }
     }
 
-    /* package */ void dispatchActivityStarted(Activity activity) {
+    /* package */ void dispatchActivityStartedCompat(Activity activity) {
     	ActivityLifecycleCallbacksCompat[] callbacks = collectActivityLifecycleCallbacks();
         if (callbacks != null) {
             for (int i=0; i<callbacks.length; i++) {
@@ -85,7 +85,7 @@ public class ApplicationCompat extends Application {
         }
     }
 
-    /* package */ void dispatchActivityResumed(Activity activity) {
+    /* package */ void dispatchActivityResumedCompat(Activity activity) {
     	ActivityLifecycleCallbacksCompat[] callbacks = collectActivityLifecycleCallbacks();
         if (callbacks != null) {
             for (int i=0; i<callbacks.length; i++) {
@@ -94,7 +94,7 @@ public class ApplicationCompat extends Application {
         }
     }
 
-    /* package */ void dispatchActivityPaused(Activity activity) {
+    /* package */ void dispatchActivityPausedCompat(Activity activity) {
     	ActivityLifecycleCallbacksCompat[] callbacks = collectActivityLifecycleCallbacks();
         if (callbacks != null) {
             for (int i=0; i<callbacks.length; i++) {
@@ -103,7 +103,7 @@ public class ApplicationCompat extends Application {
         }
     }
 
-    /* package */ void dispatchActivityStopped(Activity activity) {
+    /* package */ void dispatchActivityStoppedCompat(Activity activity) {
     	ActivityLifecycleCallbacksCompat[] callbacks = collectActivityLifecycleCallbacks();
         if (callbacks != null) {
             for (int i=0; i<callbacks.length; i++) {
@@ -112,7 +112,7 @@ public class ApplicationCompat extends Application {
         }
     }
 
-    /* package */ void dispatchActivitySaveInstanceState(Activity activity, Bundle outState) {
+    /* package */ void dispatchActivitySaveInstanceStateCompat(Activity activity, Bundle outState) {
     	ActivityLifecycleCallbacksCompat[] callbacks = collectActivityLifecycleCallbacks();
         if (callbacks != null) {
             for (int i=0; i<callbacks.length; i++) {
@@ -121,7 +121,7 @@ public class ApplicationCompat extends Application {
         }
     }
 
-    /* package */ void dispatchActivityDestroyed(Activity activity) {
+    /* package */ void dispatchActivityDestroyedCompat(Activity activity) {
     	ActivityLifecycleCallbacksCompat[] callbacks = collectActivityLifecycleCallbacks();
         if (callbacks != null) {
             for (int i=0; i<callbacks.length; i++) {
