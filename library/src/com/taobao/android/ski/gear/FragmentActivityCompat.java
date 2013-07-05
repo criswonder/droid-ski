@@ -15,7 +15,7 @@ import com.taobao.android.ski.gear.SharedPreferencesCompat.SharedPreferencesWrap
  *
  * @author Oasis
  */
-public class FragmentActivityCompat extends FragmentActivity {
+public class FragmentActivityCompat extends FragmentActivity implements ActivityCompatJellyBean {
 
 	private static final boolean COMPAT = Build.VERSION.SDK_INT < VERSION_CODES.ICE_CREAM_SANDWICH;
 
@@ -23,12 +23,6 @@ public class FragmentActivityCompat extends FragmentActivity {
 		return new SharedPreferencesWrapper(super.getSharedPreferences(name, mode));
 	}
 
-	/**
-	 * Provide this method for API level ~16.
-	 *
-	 * <p>Note: It should <b>NEVER</b> be used in {@link Fragment#onDestroy()},
-	 *   since the return value may be different from the one in API level 17.
-	 */
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
 	@Override public boolean isDestroyed() {
 		if (Build.VERSION.SDK_INT < VERSION_CODES.JELLY_BEAN_MR1) return mDestroyed;
