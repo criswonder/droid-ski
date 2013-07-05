@@ -46,6 +46,7 @@ public class RoseService extends Service {
 	public static final int ROSE_LEVEL_VERBOSE = 3;
 	
 	private LoadView mView;
+	private RoseInfo mInfo;
     
     public class LoadView extends View {
         private Handler mHandler = new Handler() {
@@ -137,6 +138,10 @@ public class RoseService extends Service {
                     resolveSize(mNeededHeight, heightMeasureSpec));
         }
 
+        public Handler getHandler(){
+        	return mHandler;
+        }
+        
         @Override
         public void onDraw(Canvas canvas) {
         	
@@ -162,7 +167,7 @@ public class RoseService extends Service {
 
         void updateDisplay() {
         	
-            int maxWidth = 100;
+            int maxWidth = mInfo.name;
             int maxHeight = 100;
             
             int neededWidth = 4 + 4 + maxWidth;
@@ -218,8 +223,16 @@ public class RoseService extends Service {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case SEND_MSG:
+                	RoseInfo info = new RoseInfo();
+                	info.level = msg.arg1;
                 	Bundle bundle = (Bundle)msg.obj;
-                    Toast.makeText(getApplicationContext(), bundle.getString("Text"), Toast.LENGTH_SHORT).show();
+                	info.name = bundle.getString("Name");
+                	info.content = bundle.getString("Content");
+                	
+                	mInfo = info;
+                	mView.getHandler().sendEmptyMessage(UPDATE_VIEW_MSG);
+                	
+                    Toast.makeText(getApplicationContext(), bundle.getString("Content"), Toast.LENGTH_SHORT).show();
                     break;
                 default:
                     super.handleMessage(msg);
@@ -236,6 +249,12 @@ public class RoseService extends Service {
     public IBinder onBind(Intent intent) {
     	Toast.makeText(getApplicationContext(), "binding", Toast.LENGTH_SHORT).show();
         return mMessenger.getBinder();
+    }
+    
+    class RoseInfo {
+    	int level;
+    	String name;
+    	String content;
     }
     
     private final static String TAG = "RoseService";
