@@ -105,7 +105,7 @@ public class Dock extends Instrumentation {
 		if ((mFlags & FLAG_LAUNCH_TIMING) != 0) notify("App Start Time", duration + "ms");
 
 //		SysLogMon.stop();
-		RoseServiceConnection.helloRose(RoseService.ROSE_LEVEL_VERBOSE, "hello rose!");
+		RoseServiceConnection.helloRose(RoseService.ROSE_LEVEL_VERBOSE, "text", "hello rose!");
 		
 		Toto.get(this.getTargetContext()).showToast("Ski Load finish");
 		

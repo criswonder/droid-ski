@@ -167,8 +167,8 @@ public class RoseService extends Service {
 
         void updateDisplay() {
         	
-            int maxWidth = mInfo.name;
-            int maxHeight = 100;
+            int maxWidth = getTextRect(mInfo.name).width();
+            int maxHeight = getTextRect(mInfo.name).height();
             
             int neededWidth = 4 + 4 + maxWidth;
             int neededHeight = 4 + 4 + maxHeight;
@@ -180,6 +180,16 @@ public class RoseService extends Service {
                 invalidate();
             }
         }
+        
+    	Rect getTextRect(String text) {
+    		Rect rect = new Rect();  
+    		mNormalPaint.getTextBounds(text, 0, text.length(), rect);  
+    		int w = rect.width();  
+    		int h = rect.height();  
+    		Log.d(TAG, "w=" +w+"  h="+h);
+    		
+    		return rect;
+    	}
     }
 
     @Override
