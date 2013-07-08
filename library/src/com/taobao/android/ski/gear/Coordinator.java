@@ -22,11 +22,10 @@ public class Coordinator {
 
 	public static void postTask(TaggedRunnable runnable) {
 		StandaloneTask task = new StandaloneTask(runnable);
-		if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.HONEYCOMB_MR1) {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB)
 			task.execute();
-		} else {
+		else
 			task.executeOnExecutor(mExecutor);
-		}
 //		mTasks.add(task);
 	}
 
@@ -56,8 +55,8 @@ public class Coordinator {
 		} finally {
 			cputime = Debug.threadCpuTimeNanos() - cputime;
 			time = System.nanoTime() - time;
-			Log.i(TAG, (failed ? "Timing (failure) - " : "Timing - ") + runnable.tag + ": "
-					+ cputime / 1000000 + "/" + time / 1000000);
+			Log.i(TAG, "Timing - " + runnable.tag + (failed ? " (failed): " : ": ")
+					+ cputime / 1000000 + "ms (cpu) / " + time / 1000000 + "ms (real)");
 		}
 	}
 
@@ -86,7 +85,7 @@ public class Coordinator {
 			mExecutor = default_executor != null ? default_executor : new SaturativeExecutor();
 		}
 	}
-	
+
 	static class StandaloneTask extends AsyncTask<Void, Void, Void> {
 
 		public StandaloneTask(TaggedRunnable runnable) {
