@@ -22,8 +22,12 @@ public class Coordinator {
 
 	public static void postTask(TaggedRunnable runnable) {
 		StandaloneTask task = new StandaloneTask(runnable);
-		task.executeOnExecutor(mExecutor);
-		mTasks.add(task);
+		if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.HONEYCOMB_MR1) {
+			task.execute();
+		} else {
+			task.executeOnExecutor(mExecutor);
+		}
+//		mTasks.add(task);
 	}
 
 	public static void postTasks(TaggedRunnable... runnables) {
@@ -68,7 +72,7 @@ public class Coordinator {
 		} catch(Exception e) { return null; }
 	}
 
-	private static final List<AsyncTask<?,?,?>> mTasks = new LinkedList<AsyncTask<?,?,?>>();
+//	private static final List<AsyncTask<?,?,?>> mTasks = new LinkedList<AsyncTask<?,?,?>>();
 	private static final List<Runnable> mFinisher = new LinkedList<Runnable>();
 	private static final Executor mExecutor;
 	private static final String TAG = "Coord";
