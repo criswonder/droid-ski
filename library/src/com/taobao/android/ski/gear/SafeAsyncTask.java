@@ -18,4 +18,8 @@ public abstract class SafeAsyncTask<Params, Result> extends AsyncTask<Params, Vo
 	protected abstract void onResult(Result result);
 
 	private final FragmentActivityCompat mActivity;
+	
+	public static void execute(Runnable runnable) {
+		Coordinator.getCurrentExecutor().execute(runnable);
+	}
 }

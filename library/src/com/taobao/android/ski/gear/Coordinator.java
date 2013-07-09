@@ -61,7 +61,7 @@ public class Coordinator {
 	}
 
 	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
-	private static Executor getDefaultAsyncTaskExecutor() {
+	static Executor getDefaultAsyncTaskExecutor() {
 		if (Build.VERSION.SDK_INT >= VERSION_CODES.HONEYCOMB)
 			return AsyncTask.SERIAL_EXECUTOR;
 		else try {
@@ -69,6 +69,10 @@ public class Coordinator {
 			field.setAccessible(true);
 			return (Executor) field.get(null);
 		} catch(Exception e) { return null; }
+	}
+	
+	static Executor getCurrentExecutor() {
+		return mExecutor;
 	}
 
 //	private static final List<AsyncTask<?,?,?>> mTasks = new LinkedList<AsyncTask<?,?,?>>();
@@ -82,7 +86,7 @@ public class Coordinator {
 			mExecutor = executor;
 		else {
 			Executor default_executor = getDefaultAsyncTaskExecutor();
-			mExecutor = default_executor != null ? default_executor : new SaturativeExecutor();
+			mExecutor = default_executor != null ? default_executor : executor;
 		}
 	}
 
