@@ -117,6 +117,17 @@ public class Dock extends Instrumentation {
         		&& activity.getClass().getName().equals("com.taobao.tao.MainActivity2"))
         	Debug.stopMethodTracing();
 	}
+	
+	
+
+	@Override
+	public void callActivityOnDestroy(Activity activity) {
+		Log.w(TAG, "callActivityOnDestroy");
+		super.callActivityOnDestroy(activity);
+		if ((mFlags & FLAG_MONITOR_ACTIVITY_PERF) != 0
+        		&& activity.getClass().getName().equals("com.taobao.tao.MainActivity2"))
+			ActivityPerfMon.stop();
+	}
 
 	@SuppressWarnings("deprecation")
 	private void notify(String title, String msg) {

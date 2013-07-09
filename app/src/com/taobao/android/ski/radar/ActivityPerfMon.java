@@ -61,10 +61,16 @@ public class ActivityPerfMon {
 		}
 	}
 
+	public static void stop(){
+		mStop = true;
+	}
+	
 	private static Runnable mPatrol = new Runnable() { @Override public void run() {
 		try {
-			scanActivityEvents();
-			mHandler.postDelayed(this, PATROL_INTERVAL);
+			if(!mStop) {
+				scanActivityEvents();
+				mHandler.postDelayed(this, PATROL_INTERVAL);
+			}
 		} catch (final IOException e) { Log.e(TAG, "Failed to scan activity events.", e); }
 	}};
 
@@ -73,6 +79,7 @@ public class ActivityPerfMon {
 	private static long mThreshold;
 	private static Yell mYell;
 	private static long mLastScannedEventTimeNanos = System.currentTimeMillis() * 1000000;
+	private static boolean mStop = false;
 
 	private static final String TAG = "ActvtPerf";
 }

@@ -146,32 +146,67 @@ public class RoseService extends Service {
         public void onDraw(Canvas canvas) {
         	
             super.onDraw(canvas);
-            final int W = mNeededWidth;
-            final int RIGHT = getWidth()-1;
+            int H = getTextRect(mInfo.name).height();
+            final int LEFT = 4;
 
             int y = 4;
-            String text = "";
+            y += H;
+            String text = mInfo.name;
             if(!TextUtils.isEmpty(text)) {
-                canvas.drawText(text, RIGHT-4-W-1,
+                canvas.drawText(text, LEFT-1,
                         y-1, mShadowPaint);
-                canvas.drawText(text, RIGHT-4-W-1,
+                canvas.drawText(text, LEFT-1,
                         y+1, mShadowPaint);
-                canvas.drawText(text, RIGHT-4-W+1,
+                canvas.drawText(text, LEFT+1,
                         y-1, mShadow2Paint);
-                canvas.drawText(text, RIGHT-4-W+1,
+                canvas.drawText(text, LEFT+1,
                         y+1, mShadow2Paint);
-                canvas.drawText(text, RIGHT-4-W,
+                canvas.drawText(text, LEFT,
                         y, mNormalPaint);
+            }
+            
+            H = getTextRect(mInfo.content).height();
+            y += H;
+            Paint paint;
+            if(mInfo.level == ROSE_LEVEL_ERROR)
+            	paint = mErrorPaint;
+            else if(mInfo.level == ROSE_LEVEL_WARN)
+            	paint = mWarnPaint;
+            else{
+            	paint = mNormalPaint;
+            }
+            
+            text = mInfo.content;
+            if(!TextUtils.isEmpty(text)) {
+                canvas.drawText(text, LEFT-1,
+                        y-1, mShadowPaint);
+                canvas.drawText(text, LEFT-1,
+                        y+1, mShadowPaint);
+                canvas.drawText(text, LEFT+1,
+                        y-1, mShadow2Paint);
+                canvas.drawText(text, LEFT+1,
+                        y+1, mShadow2Paint);
+                canvas.drawText(text, LEFT,
+                        y, paint);
             }
         }
 
         void updateDisplay() {
         	
-            int maxWidth = getTextRect(mInfo.name).width();
-            int maxHeight = getTextRect(mInfo.name).height();
-            
-            int neededWidth = 4 + 4 + maxWidth;
-            int neededHeight = 4 + 4 + maxHeight;
+        	int neededWidth = 0;
+        	int neededHeight = 0;
+        	if(mInfo != null) {
+                int name = getTextRect(mInfo.name).width();
+                int content = getTextRect(mInfo.content).width();
+                int maxWidth = (name > content ? name : content);
+                
+                int allHeight = getTextRect(mInfo.content).height();
+                allHeight += getTextRect(mInfo.content).height();
+                
+                neededWidth = 4 + 4 + maxWidth;
+                neededHeight = 4 + 4 + allHeight;
+        	}
+
             if (neededWidth != mNeededWidth || neededHeight != mNeededHeight) {
                 mNeededWidth = neededWidth;
                 mNeededHeight = neededHeight;
