@@ -9,9 +9,11 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 
+import android.annotation.TargetApi;
 import android.app.Instrumentation;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.DropBoxManager;
 import android.os.StrictMode;
 import android.util.Log;
@@ -42,7 +44,7 @@ public class StrictModeMon {
 		}
 	}
 	
-	
+	@TargetApi(Build.VERSION_CODES.GINGERBREAD)
 	public static void start(Instrumentation instr) {
 
 		StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()

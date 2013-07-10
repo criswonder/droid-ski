@@ -20,6 +20,7 @@ public class Coordinator {
 		private final String tag;
 	}
 
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	public static void postTask(TaggedRunnable runnable) {
 		StandaloneTask task = new StandaloneTask(runnable);
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB)
