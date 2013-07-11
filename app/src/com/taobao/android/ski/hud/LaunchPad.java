@@ -42,6 +42,12 @@ public class LaunchPad extends Activity {
 
 	private void start(int flags) {
 		
+		//activity leak switch
+		ToggleButton actleakbut = (ToggleButton)findViewById(R.id.activityleakbutton);
+		if(actleakbut.isChecked()) {
+			flags = flags | Dock.FLAG_MONITOR_ACTIVITY_LEAK;
+		}
+
 		//activity perf switch
 		ToggleButton actbut = (ToggleButton)findViewById(R.id.activityperfbutton);
 		if(actbut.isChecked()) {

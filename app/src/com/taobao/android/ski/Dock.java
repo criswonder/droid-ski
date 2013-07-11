@@ -21,6 +21,7 @@ import android.os.Environment;
 import android.util.Log;
 
 import com.taobao.android.ski.hud.Toto;
+import com.taobao.android.ski.radar.ActivityLeakMonitor;
 import com.taobao.android.ski.radar.ActivityPerfMon;
 import com.taobao.android.ski.radar.AnimationPerfMon;
 import com.taobao.android.ski.radar.SysLogMon;
@@ -37,6 +38,7 @@ public class Dock extends Instrumentation {
 	public static final int FLAG_LAUNCH_PROFILING = 1 << 1;
 	public static final int FLAG_MONITOR_ANIMATION_PERF = 1 << 2;
 	public static final int FLAG_MONITOR_ACTIVITY_PERF = 1 << 3;
+	public static final int FLAG_MONITOR_ACTIVITY_LEAK = 1 << 4;
 	
 	public static final String KEY_ACTIVITY_LAUNCH_TIME = "am_launch_time";
 	public static final String KEY_THREASHOLD = "choreographer";
@@ -69,6 +71,11 @@ public class Dock extends Instrumentation {
 			int launchtime = arguments == null ? 500 : arguments.getInt(KEY_ACTIVITY_LAUNCH_TIME, 500);
 			ActivityPerfMon.install(getTargetContext(), launchtime);
 		}
+		
+		if ((mFlags & FLAG_MONITOR_ACTIVITY_LEAK) != 0){
+			ActivityLeakMonitor.install(getTargetContext());
+		}
+		
 		start();
 	}
 
@@ -117,16 +124,25 @@ public class Dock extends Instrumentation {
         		&& activity.getClass().getName().equals("com.taobao.tao.MainActivity2"))
         	Debug.stopMethodTracing();
 	}
-	
-	
 
 	@Override
 	public void callActivityOnDestroy(Activity activity) {
 		Log.w(TAG, "callActivityOnDestroy");
 		super.callActivityOnDestroy(activity);
 		if ((mFlags & FLAG_MONITOR_ACTIVITY_PERF) != 0
-        		&& activity.getClass().getName().equals("com.taobao.tao.MainActivity2"))
+        		&& activity.getClass().getName().equals("com.taobao.tao.MainActivity2")) {
 			ActivityPerfMon.stop();
+		}
+		
+		if ((mFlags & FLAG_MONITOR_ACTIVITY_LEAK) != 0){
+			ActivityLeakMonitor.addDestroyedActivity(activity);
+		}
+	}
+
+	@Override
+	public void onDestroy() {
+		Log.w(TAG, "onDestroy");
+		super.onDestroy();
 	}
 
 	@SuppressWarnings("deprecation")

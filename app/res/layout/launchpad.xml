@@ -6,6 +6,14 @@
     android:gravity="bottom"
     android:orientation="vertical" >
 
+     <ToggleButton 
+    	android:id="@+id/activityleakbutton"
+    	android:layout_width="wrap_content"
+    	android:layout_height="wrap_content"
+    	android:textOn="ActivityLeak on"
+    	android:textOff="ActivityLeak off"
+    	android:gravity="center_horizontal"/>
+    
     <RelativeLayout 
         android:id="@+id/activity_perf"
         android:layout_width="match_parent"
