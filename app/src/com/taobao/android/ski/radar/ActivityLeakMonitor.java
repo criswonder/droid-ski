@@ -27,8 +27,7 @@ public class ActivityLeakMonitor {
 	
 	private final static String TAG = "ActivityLeakMonitor";
 
-	private final static int MEMORY_MONITOR_INTVL = 10000;
-	private final static int ACTIVITY_MONITOR_INTVL = 3*MEMORY_MONITOR_INTVL;
+	private final static int ACTIVITY_MONITOR_INTVL = 15000;
 		
 	private static Context mAppContext;
 	private static Handler mHandler;
@@ -53,6 +52,10 @@ public class ActivityLeakMonitor {
 		WeakReference<Object> ref = new WeakReference<Object>(activity); 
 		Log.d(TAG, "add destroyed activity "+activity.toString());
 		mHandler.postDelayed(new CheckPearl(ref), ACTIVITY_MONITOR_INTVL);
+		
+		Log.d(TAG, "call GC");
+		System.gc();
+		System.gc();
 	}
 	
 	private static class CheckPearl implements Runnable {
@@ -66,8 +69,7 @@ public class ActivityLeakMonitor {
 		
 		@Override
 		public void run() {
-			Log.d(TAG, "call GC");
-			System.gc();
+
 			Object ss = mObj.get();
 			if(ss == null){
 				Log.d(TAG, mIdentifier + "has bean cycle by gc");
@@ -76,48 +78,24 @@ public class ActivityLeakMonitor {
 				
 				mYell.showNotification(TAG, mIdentifier, "has bean leaked");
 
-				String a[] = new String[1];
-				a[0] = mIdentifier;
-			    new Thread(new LeakActivityDumpThread(a)).start();
+			    new Thread(new LeakActivityDumpThread(mIdentifier)).start();
 			}
 		}
 	}
 
 	static class LeakActivityDumpThread implements Runnable{
-		private String[] leakActivitys;
-		public LeakActivityDumpThread(String[] leakActivitys){
-			this.leakActivitys = leakActivitys;
+		private String leakActivity;
+		public LeakActivityDumpThread(String leakActivitys){
+			this.leakActivity = leakActivitys;
 		}
 		@Override
 		public void run() {
 			String state = Environment.getExternalStorageState();
 	        if (state != null && state.equals(android.os.Environment.MEDIA_MOUNTED)){
 	        	String sdcard = Environment.getExternalStorageDirectory().toString();
-	        	File fileDir = new File(sdcard,"MemoryMointor/"+mAppContext.getPackageName()+"/leak_activity/"+ mTimeForName);
+	        	File fileDir = new File(sdcard,"MemoryMonitor/"+mAppContext.getPackageName()+"/leak_activity/"+ mTimeForName + "/" + leakActivity);
 	        	fileDir.mkdirs();
-	        	File leakList = new File(fileDir.getAbsolutePath(),"ActivityList.txt");
-	        	FileOutputStream os = null;
-	        	try {
-	        		if(!leakList.exists())
-	        			leakList.createNewFile();
-					os = new FileOutputStream(leakList);
-					StringBuffer str = new StringBuffer();
-					
-					str.append("list:\r\n");
-					for(int i=0;i<leakActivitys.length;i++){
-						str.append(leakActivitys[i]+"\r\n");
-					}
-					os.write(str.toString().getBytes());
-				} catch (IOException e) {
-					e.printStackTrace();
-				}finally{
-					if(os != null)
-						try {
-							os.close();
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-				}
+	        	
 	        	try {
 	        		File hprofFile = new File(fileDir.getAbsolutePath(),"com.taobao.taobao.hprof");
 	        		hprofFile.delete();
