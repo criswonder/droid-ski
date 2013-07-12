@@ -25,7 +25,7 @@ import android.util.Log;
  *
  * <p>SaturativeExecutor ensures new thread will only be started when some of the CPU cores are not fully occupied.
  * Otherwise tasks are queued instead to reduce the unnecessary context switches of threads.
- * 
+ *
  * @author Oasis
  */
 public class SaturativeExecutor extends ThreadPoolExecutor {
@@ -35,7 +35,7 @@ public class SaturativeExecutor extends ThreadPoolExecutor {
     private static final int QUEUE_CAPACITY = 1024;
 	private static final Pattern PATTERN_CPU_ENTRIES = Pattern.compile("cpu[0-9]+");
 
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 
     @Override public void execute(Runnable command) {
     	super.execute(new CountedTask(command));
@@ -117,7 +117,7 @@ public class SaturativeExecutor extends ThreadPoolExecutor {
 		if (DEBUG) System.out.println("Status: " + num_busy + " busy & " + num_idle + " idle in " + num_threads + " threads, " + mQueue.size() + " queued...");
 		return num_busy >= core_size;
 	}
-	
+
 	protected static void collectThread(Thread thread) {
 		synchronized(mThreads) {
 			mThreads.add(thread);
@@ -172,7 +172,7 @@ public class SaturativeExecutor extends ThreadPoolExecutor {
 			if (mExecutor.isReallyUnsaturated()) throw new IllegalStateException("Unsaturated");
     		return super.add(e);
     	}
-    	
+
     	@Override public boolean offer(T e) {
     		return mExecutor.isReallyUnsaturated() ? false: super.offer(e);
     	}
