@@ -1,8 +1,6 @@
 package com.taobao.android.ski.gear;
 
 import java.lang.reflect.Field;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.Executor;
 
 import android.annotation.TargetApi;
@@ -27,16 +25,11 @@ public class Coordinator {
 			task.execute();
 		else
 			task.executeOnExecutor(mExecutor);
-//		mTasks.add(task);
 	}
 
 	public static void postTasks(TaggedRunnable... runnables) {
 		for (TaggedRunnable runnable : runnables)
 			postTask(runnable);
-	}
-
-	public static void addFinisher(Runnable runnable) {
-		mFinisher.add(runnable);
 	}
 
 	public static void runTasks(TaggedRunnable... runnables) {
@@ -50,9 +43,9 @@ public class Coordinator {
 		long cputime = Debug.threadCpuTimeNanos();
 		try {
 			runnable.run();
-		} catch(Exception e) {
+		} catch(RuntimeException e) {
 			failed = true;
-			e.printStackTrace(System.err);
+			Log.w(TAG, "Exception in " + runnable.tag, e);
 		} finally {
 			cputime = Debug.threadCpuTimeNanos() - cputime;
 			time = System.nanoTime() - time;
@@ -76,8 +69,6 @@ public class Coordinator {
 		return mExecutor;
 	}
 
-//	private static final List<AsyncTask<?,?,?>> mTasks = new LinkedList<AsyncTask<?,?,?>>();
-	private static final List<Runnable> mFinisher = new LinkedList<Runnable>();
 	private static final Executor mExecutor;
 	private static final String TAG = "Coord";
 
