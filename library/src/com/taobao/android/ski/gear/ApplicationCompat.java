@@ -2,6 +2,8 @@ package com.taobao.android.ski.gear;
 
 import java.util.ArrayList;
 
+import javax.annotation.Nullable.Nullable;
+
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Application;
@@ -22,7 +24,7 @@ public class ApplicationCompat extends Application {
 
 	/** Backward-compatible version of {@link Application.ActivityLifecycleCallbacks} */
     public interface ActivityLifecycleCallbacksCompat {
-        void onActivityCreated(Activity activity, Bundle savedInstanceState);
+        void onActivityCreated(Activity activity, @Nullable Bundle savedInstanceState);
         void onActivityStarted(Activity activity);
         void onActivityResumed(Activity activity);
         void onActivityPaused(Activity activity);
@@ -34,7 +36,7 @@ public class ApplicationCompat extends Application {
     /** Empty implementation of {@link ActivityLifecycleCallbacksCompat} for subset overriding */
     public static class AbstractActivityLifecycleCallbacks implements ActivityLifecycleCallbacksCompat {
 
-		@Override public void onActivityCreated(Activity activity, Bundle savedInstanceState) {}
+		@Override public void onActivityCreated(Activity activity, @Nullable Bundle savedInstanceState) {}
 		@Override public void onActivityStarted(Activity activity) {}
 		@Override public void onActivityResumed(Activity activity) {}
 		@Override public void onActivityPaused(Activity activity) {}
@@ -145,7 +147,7 @@ public class ApplicationCompat extends Application {
     @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 	private class ActivityLifecycleCallbacksWrapper implements ActivityLifecycleCallbacks {
 
-    	@Override public void onActivityCreated(Activity activity, Bundle savedInstanceState) { mCompat.onActivityCreated(activity, savedInstanceState); }
+    	@Override public void onActivityCreated(Activity activity, @Nullable Bundle savedInstanceState) { mCompat.onActivityCreated(activity, savedInstanceState); }
 		@Override public void onActivityStarted(Activity activity) { mCompat.onActivityStarted(activity); }
 		@Override public void onActivityResumed(Activity activity) { mCompat.onActivityResumed(activity); }
 		@Override public void onActivityPaused(Activity activity) { mCompat.onActivityPaused(activity); }
@@ -155,7 +157,7 @@ public class ApplicationCompat extends Application {
 
     	@Override public int hashCode() { return mCompat.hashCode(); }
 
-    	@Override public boolean equals(Object obj) {
+    	@Override public boolean equals(@Nullable Object obj) {
 			if (this == obj) return true;
 			if (! (obj instanceof ActivityLifecycleCallbacksWrapper)) return false;
 			return mCompat.equals(((ActivityLifecycleCallbacksWrapper) obj).mCompat);
