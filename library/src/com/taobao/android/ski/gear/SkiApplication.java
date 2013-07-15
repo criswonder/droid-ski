@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.annotation.Nullable.Nullable;
+import javax.annotation.Nullable;
 
 import android.app.Activity;
 import android.os.Bundle;

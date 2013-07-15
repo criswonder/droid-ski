@@ -2,7 +2,7 @@ package com.taobao.android.ski.gear;
 
 import java.util.ArrayList;
 
-import javax.annotation.Nullable.Nullable;
+import javax.annotation.Nullable;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -132,7 +132,7 @@ public class ApplicationCompat extends Application {
         }
     }
 
-    private ActivityLifecycleCallbacksCompat[] collectActivityLifecycleCallbacks() {
+    private @Nullable ActivityLifecycleCallbacksCompat[] collectActivityLifecycleCallbacks() {
     	ActivityLifecycleCallbacksCompat[] callbacks = null;
         synchronized (mActivityLifecycleCallbacks) {
             if (mActivityLifecycleCallbacks.size() > 0) {
