@@ -5,6 +5,10 @@ import android.os.AsyncTask;
 /** @author Oasis */
 public abstract class SafeAsyncTask<Params, Result> extends AsyncTask<Params, Void, Result> {
 
+	/** This method should be called in application initialization, to make sure
+	 *  AsyncTask's internal handler is created on the main thread. */
+	static final void init() { /* Do nothing besides static initialization. */ }
+
 	public SafeAsyncTask(FragmentActivityCompat activity) {
 		mActivity = activity;
 	}
@@ -18,7 +22,7 @@ public abstract class SafeAsyncTask<Params, Result> extends AsyncTask<Params, Vo
 	protected abstract void onResult(Result result);
 
 	private final FragmentActivityCompat mActivity;
-	
+
 	public static void execute(Runnable runnable) {
 		Coordinator.getCurrentExecutor().execute(runnable);
 	}
