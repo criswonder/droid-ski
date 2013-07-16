@@ -1,6 +1,8 @@
 package com.taobao.android.ski.gear;
 
 import java.lang.reflect.Field;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.concurrent.Executor;
 
 import android.annotation.TargetApi;
@@ -8,6 +10,8 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Debug;
+import android.os.Looper;
+import android.os.MessageQueue.IdleHandler;
 import android.util.Log;
 
 /** @author Oasis */
@@ -32,9 +36,25 @@ public class Coordinator {
 			postTask(runnable);
 	}
 
+	public static void postIdleTask(TaggedRunnable runnable) {
+		mIdleTasks.add(runnable);
+	}
+
 	public static void runTasks(TaggedRunnable... runnables) {
 		for (TaggedRunnable runnable : runnables)
 			runWithTiming(runnable);
+	}
+
+	/** Must be called on main thread or any other thread with Looper. */
+	public static void scheduleIdleTasks() {
+		Looper.myQueue().addIdleHandler(new IdleHandler() {
+
+			@Override public boolean queueIdle() {
+				TaggedRunnable task = mIdleTasks.poll();	// One at a time to avoid congestion.
+				if (task == null) return false;
+				postTask(task);
+				return ! mIdleTasks.isEmpty();
+			}});
 	}
 
 	private static void runWithTiming(TaggedRunnable runnable) {
@@ -64,11 +84,12 @@ public class Coordinator {
 			return (Executor) field.get(null);
 		} catch(Exception e) { return null; }
 	}
-	
+
 	static Executor getCurrentExecutor() {
 		return mExecutor;
 	}
 
+	private static final Queue<TaggedRunnable> mIdleTasks = new LinkedList<TaggedRunnable>();
 	private static final Executor mExecutor;
 	private static final String TAG = "Coord";
 
