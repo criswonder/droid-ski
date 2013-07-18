@@ -33,6 +33,7 @@ public class SaturativeExecutor extends ThreadPoolExecutor {
 	private static final int MAX_POOL_SIZE = 128;
     private static final int KEEP_ALIVE = 1;			// In seconds
     private static final int QUEUE_CAPACITY = 1024;
+	private static final int MIN_THREADS_BEFORE_SATURATION = 3;
 	private static final Pattern PATTERN_CPU_ENTRIES = Pattern.compile("cpu[0-9]+");
 
 	private static final boolean DEBUG = false;
@@ -42,6 +43,7 @@ public class SaturativeExecutor extends ThreadPoolExecutor {
     }
 
     public static final boolean installAsDefaultAsyncTaskExecutor(ThreadPoolExecutor executor) {
+    	
     	try {
 			Method setter = AsyncTask.class.getMethod("setDefaultExecutor", Executor.class);
 			setter.setAccessible(true);
@@ -78,6 +80,7 @@ public class SaturativeExecutor extends ThreadPoolExecutor {
 		((SaturationAwareBlockingQueue<Runnable>) getQueue()).setExecutor(this);
 	}
 
+	/** @return true will cause new thread being created, otherwise new task will be queued. */
     protected boolean isReallyUnsaturated() {
     	if (isSaturated()) return false;
     	// Spin for sure
@@ -89,7 +92,9 @@ public class SaturativeExecutor extends ThreadPoolExecutor {
     	return true;
     }
 
+	/** @return true will cause new task being queued, otherwise new thread will be created. */
     protected boolean isSaturated() {
+    	if (getPoolSize() <= MIN_THREADS_BEFORE_SATURATION) return false;
 		int core_size = getCorePoolSize();
     	int num_running = CountedTask.mNumRunning.get();
 		int num_threads = mThreads.size();		// Safe to read the size unsynchronized
@@ -187,6 +192,7 @@ public class SaturativeExecutor extends ThreadPoolExecutor {
     protected static class CountedTask implements Runnable {
 
 		public CountedTask(Runnable runnable) { mRunnable = runnable; }
+
 		@Override public void run() {
 			mNumRunning.incrementAndGet();
 			try { mRunnable.run(); }
