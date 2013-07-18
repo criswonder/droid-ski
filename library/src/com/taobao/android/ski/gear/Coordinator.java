@@ -49,7 +49,7 @@ public class Coordinator {
 		} finally {
 			cputime = Debug.threadCpuTimeNanos() - cputime;
 			time = System.nanoTime() - time;
-			Log.i(TAG, "Timing - " + runnable.tag + (failed ? " (failed): " : ": ")
+			Log.d(TAG, "Timing - " + runnable.tag + (failed ? " (failed): " : ": ")
 					+ cputime / 1000000 + "ms (cpu) / " + time / 1000000 + "ms (real)");
 		}
 	}
