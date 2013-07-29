@@ -1,6 +1,6 @@
-package com.taobao.android.ski.gear;
+package com.taobao.android.compat;
 
-interface ActivityCompatJellyBean {
+public interface ActivityCompatJellyBean {
 
 	/**
 	 * Provide this method for API level ~16.
