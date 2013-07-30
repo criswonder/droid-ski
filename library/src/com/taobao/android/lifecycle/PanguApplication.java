@@ -10,6 +10,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 
+import com.taobao.android.base.Versions;
 import com.taobao.android.compat.ApplicationCompat;
 import com.taobao.android.task.SafeAsyncTask;
 
@@ -46,6 +47,7 @@ public class PanguApplication extends ApplicationCompat {
 
 	@Override public void onCreate() {
 		super.onCreate();
+		Versions.init(this);
 		registerActivityLifecycleCallbacks(new CrossActivityLifecycleCallbacks());
 		SafeAsyncTask.init();
 	}
