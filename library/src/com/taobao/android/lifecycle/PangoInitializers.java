@@ -55,11 +55,14 @@ public abstract class PangoInitializers {
 		return mApplication;
 	}
 
-	abstract void onInitializerException(Method method, Exception exception);
+	public abstract void onInitializerException(Method method, Exception exception);
 
 	public void start(final PanguApplication application) {
 		mApplication = application;
-		parse();
+		
+		Coordinator.runTask(new TaggedRunnable("PangoInitializers.parse") { @Override public void run() {
+			parse();
+		}});
 
 		startInitializersWithout(UiOnly.class);
 
@@ -167,7 +170,7 @@ class DemoInitializers extends PangoInitializers {
 	static void initGoogleAnalytics() {}
 
 	@Override
-	void onInitializerException(Method method, Exception exception) {
+	public void onInitializerException(Method method, Exception exception) {
 		// Send exception report
 		// Attempt to recovery from exception
 		// Prepare for safe-mode restart
