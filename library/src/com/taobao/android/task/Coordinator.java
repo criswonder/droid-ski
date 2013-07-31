@@ -40,6 +40,10 @@ public class Coordinator {
 		mIdleTasks.add(runnable);
 	}
 
+	public static void runTask(TaggedRunnable runnable) {
+		runWithTiming(runnable);
+	}
+
 	public static void runTasks(TaggedRunnable... runnables) {
 		for (TaggedRunnable runnable : runnables)
 			runWithTiming(runnable);
