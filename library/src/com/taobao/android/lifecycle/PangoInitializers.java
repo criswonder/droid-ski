@@ -6,11 +6,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
+import android.app.Activity;
 import android.util.SparseArray;
 
 import com.taobao.android.base.Versions;
+import com.taobao.android.lifecycle.PanguApplication.CrossActivityLifecycleCallback;
 import com.taobao.android.task.Coordinator;
 import com.taobao.android.task.Coordinator.TaggedRunnable;
 
@@ -47,31 +50,66 @@ public abstract class PangoInitializers {
 	@Retention(RetentionPolicy.CLASS)
 	protected @interface UiOnly {}
 
+	/** Should only be called in initializer method */
+	protected PanguApplication getApplication() {
+		return mApplication;
+	}
+
 	abstract void onInitializerException(Method method, Exception exception);
 
-	public void start() {
+	public void start(final PanguApplication application) {
+		mApplication = application;
 		parse();
 
+		startInitializersWithout(UiOnly.class);
+
+		application.registerCrossActivityLifecycleCallback(new CrossActivityLifecycleCallback() {
+
+			@Override public void onCreated(Activity activity) {
+				application.unregisterCrossActivityLifecycleCallback(this);
+				startInitializersWithout(null);
+			}
+
+			@Override public void onStopped(Activity activity) {}
+			@Override public void onStarted(Activity activity) {}
+			@Override public void onDestroyed(Activity activity) {}
+		});
+	}
+
+	private void startInitializersWithout(Class<? extends Annotation> annotation) {
 		// Post asynchronous initializers
-		for (final Method method : mAsyncInitializers)
+		Iterator<Method> iterator = mAsyncInitializers.iterator();
+		while(iterator.hasNext()) {
+			final Method method = iterator.next();
+			if (annotation != null && method.isAnnotationPresent(annotation)) continue;
 			Coordinator.postTask(new TaggedRunnable(method.getName()) { @Override public void run() {
 				invokeInitializer(method);
 			}});
+			iterator.remove();
+		}
 
 		// Start synchronous initializers
 		for (int i = 0; i < mSyncInitializers.size(); i ++) {
 			int priority = mSyncInitializers.keyAt(i);
-			for (final Method method : mSyncInitializers.get(priority))
+			iterator = mSyncInitializers.get(priority).iterator();
+			while(iterator.hasNext()) {
+				final Method method = iterator.next();
 				Coordinator.runTask(new TaggedRunnable(method.getName()) { @Override public void run() {
 					invokeInitializer(method);
 				}});
+				iterator.remove();
+			}
 		}
 
 		// Post delayed initializers
-		for (final Method method : mAsyncInitializers)
+		iterator = mDelayedInitializers.iterator();
+		while(iterator.hasNext()) {
+			final Method method = iterator.next();
 			Coordinator.postIdleTask(new TaggedRunnable(method.getName()) { @Override public void run() {
 				invokeInitializer(method);
 			}});
+			iterator.remove();
+		}
 	}
 
 	private void parse() {
@@ -114,6 +152,7 @@ public abstract class PangoInitializers {
 		}
 	}
 
+	private PanguApplication mApplication;
 	private final SparseArray<List<Method>> mSyncInitializers = new SparseArray<List<Method>>();
 	private final List<Method> mAsyncInitializers = new ArrayList<Method>();
 	private final List<Method> mDelayedInitializers = new ArrayList<Method>();
@@ -136,6 +175,7 @@ class DemoInitializers extends PangoInitializers {
 	}
 
 	public static void main(String[] args) {
-		new DemoInitializers().start();
+		PanguApplication application = null;
+		new DemoInitializers().start(application);
 	}
 }
