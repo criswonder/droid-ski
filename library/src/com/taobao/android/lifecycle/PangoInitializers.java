@@ -1,8 +1,10 @@
 package com.taobao.android.lifecycle;
 
 import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -10,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import android.app.Activity;
+import android.util.Log;
 import android.util.SparseArray;
 
 import com.taobao.android.base.Versions;
@@ -30,7 +33,8 @@ public abstract class PangoInitializers {
 	}
 
 	/** Annotate a initXXX() method to be run synchronously */
-	@Retention(RetentionPolicy.CLASS)
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target(ElementType.METHOD)
 	protected @interface Sync {
 		/** Initializers with lowest priority start first.
 		 *  No particular order for initializers with same priority. */
@@ -38,16 +42,19 @@ public abstract class PangoInitializers {
 	}
 
 	/** Annotate initXXX() method to be run asynchronously */
-	@Retention(RetentionPolicy.CLASS)
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target(ElementType.METHOD)
 	protected @interface Async {}
 
 	/** Annotate initXXX() method to be run asynchronously when the main thread became idle. */
-	@Retention(RetentionPolicy.CLASS)
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target(ElementType.METHOD)
 	protected @interface Delayed {}
 
 	/** Annotate initXXX() method needs to be run only if UI is going to be started. (optional)
 	 *  Can be used together with above annotations */
-	@Retention(RetentionPolicy.CLASS)
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target(ElementType.METHOD)
 	protected @interface UiOnly {}
 
 	/** Should only be called in initializer method */
@@ -119,6 +126,7 @@ public abstract class PangoInitializers {
 		Method[] methods = getClass().getMethods();
 		for (Method method : methods) {
 			String name = method.getName();
+			Log.d("PangoInitializers", getClass().toString() + ":"+ name);
 			if (name.length() < 5 || ! name.startsWith("init")
 					|| ! Character.isUpperCase(name.charAt(4))) continue;
 			if (Versions.isDebug()) {		// Only check qualification in DEBUG build.
@@ -164,10 +172,10 @@ public abstract class PangoInitializers {
 class DemoInitializers extends PangoInitializers {
 
 	@Sync(priority=2) @UiOnly
-	static void initImageManager() {}
+	public static void initImageManager() {}
 
 	@Delayed
-	static void initGoogleAnalytics() {}
+	public static void initGoogleAnalytics() {}
 
 	@Override
 	public void onInitializerException(Method method, Exception exception) {
