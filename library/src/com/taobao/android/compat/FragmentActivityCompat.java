@@ -1,12 +1,13 @@
 package com.taobao.android.compat;
 
+import javax.annotation.NonNullByDefault;
+import javax.annotation.Nullable;
+
 import android.annotation.TargetApi;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-
-import com.taobao.android.compat.SharedPreferencesCompat.SharedPreferencesWrapper;
 
 /**
  * Backward-compatibility for functionalities of new Android platform versions.
@@ -15,10 +16,12 @@ import com.taobao.android.compat.SharedPreferencesCompat.SharedPreferencesWrappe
  *
  * @author Oasis
  */
+@NonNullByDefault
 public class FragmentActivityCompat extends FragmentActivity implements ActivityCompatJellyBean {
 
 	private static final boolean COMPAT = Build.VERSION.SDK_INT < VERSION_CODES.ICE_CREAM_SANDWICH;
 
+	@SuppressWarnings("null")	// SDK lacks @NonNull declaration
 	public SharedPreferencesCompat getSharedPreferencesCompat(String name, int mode) {
 		return new SharedPreferencesWrapper(super.getSharedPreferences(name, mode));
 	}
@@ -29,7 +32,7 @@ public class FragmentActivityCompat extends FragmentActivity implements Activity
 		return super.isDestroyed();
 	}
 
-	@Override protected void onCreate(Bundle savedInstanceState) {
+	@Override protected void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		if (COMPAT) getApplicationCompat().dispatchActivityCreatedCompat(this, savedInstanceState);
 	}
@@ -54,7 +57,7 @@ public class FragmentActivityCompat extends FragmentActivity implements Activity
 		if (COMPAT) getApplicationCompat().dispatchActivityStoppedCompat(this);
 	}
 
-	@Override protected void onSaveInstanceState(Bundle outState) {
+	@Override protected void onSaveInstanceState(@SuppressWarnings("null") Bundle outState) {
 		super.onSaveInstanceState(outState);
 		if (COMPAT) getApplicationCompat().dispatchActivitySaveInstanceStateCompat(this, outState);
 	}
@@ -65,6 +68,7 @@ public class FragmentActivityCompat extends FragmentActivity implements Activity
 		if (COMPAT) getApplicationCompat().dispatchActivityDestroyedCompat(this);
 	}
 
+	@SuppressWarnings("null")	// SDK lacks @NonNull declaration
 	private ApplicationCompat getApplicationCompat() {
 		return (ApplicationCompat) getApplication();
 	}

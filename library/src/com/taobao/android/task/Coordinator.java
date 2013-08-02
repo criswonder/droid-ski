@@ -5,6 +5,9 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.Executor;
 
+import javax.annotation.NonNullByDefault;
+import javax.annotation.Nullable;
+
 import android.annotation.TargetApi;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -15,6 +18,7 @@ import android.os.MessageQueue.IdleHandler;
 import android.util.Log;
 
 /** @author Oasis */
+@NonNullByDefault
 public class Coordinator {
 
 	public static abstract class TaggedRunnable implements Runnable {
@@ -33,7 +37,7 @@ public class Coordinator {
 
 	public static void postTasks(TaggedRunnable... runnables) {
 		for (TaggedRunnable runnable : runnables)
-			postTask(runnable);
+			if (runnable != null) postTask(runnable);
 	}
 
 	public static void postIdleTask(TaggedRunnable runnable) {
@@ -46,7 +50,7 @@ public class Coordinator {
 
 	public static void runTasks(TaggedRunnable... runnables) {
 		for (TaggedRunnable runnable : runnables)
-			runWithTiming(runnable);
+			if (runnable != null) runWithTiming(runnable);
 	}
 
 	/** Must be called on the main thread. */
@@ -79,7 +83,7 @@ public class Coordinator {
 	}
 
 	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
-	static Executor getDefaultAsyncTaskExecutor() {
+	static @Nullable Executor getDefaultAsyncTaskExecutor() {
 		if (Build.VERSION.SDK_INT >= VERSION_CODES.HONEYCOMB)
 			return AsyncTask.SERIAL_EXECUTOR;
 		else try {
@@ -113,7 +117,7 @@ public class Coordinator {
 			mRunnable = runnable;
 		}
 
-		@Override protected Void doInBackground(Void... params) {
+		@Override @Nullable protected Void doInBackground(@SuppressWarnings("null") Void... params) {
 			runWithTiming(mRunnable);
 			return null;
 		}

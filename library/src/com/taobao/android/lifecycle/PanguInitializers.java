@@ -11,6 +11,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.annotation.NonNullByDefault;
+import javax.annotation.Nullable;
+
 import android.app.Activity;
 import android.content.Context;
 import android.util.SparseArray;
@@ -27,6 +30,7 @@ import com.taobao.android.task.Coordinator.TaggedRunnable;
  * @see DemoInitializers
  * @author Oasis
  */
+@NonNullByDefault
 public abstract class PanguInitializers {
 
 	public static class UnqualifiedInitializerError extends Error {
@@ -57,6 +61,7 @@ public abstract class PanguInitializers {
 	protected @interface Global {}
 
 	/** Should only be called in initializer method */
+	@SuppressWarnings("null")	// Never be null when called in initializer method
 	protected PanguApplication getApplication() {
 		return mApplication;
 	}
@@ -88,7 +93,7 @@ public abstract class PanguInitializers {
 		});
 	}
 
-	private void startInitializersAnnotatedBy(Class<? extends Annotation> annotation) {
+	private void startInitializersAnnotatedBy(@Nullable Class<? extends Annotation> annotation) {
 		// Post asynchronous initializers
 		Iterator<Method> iterator = mAsyncInitializers.iterator();
 		while(iterator.hasNext()) {
@@ -170,7 +175,7 @@ public abstract class PanguInitializers {
 	private final List<Method> mDelayedInitializers = new ArrayList<Method>();
 }
 
-
+@NonNullByDefault
 class DemoApplication extends PanguApplication {
 
 	@Override public void onCreate() {

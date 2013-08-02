@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.annotation.NonNullByDefault;
 import javax.annotation.Nullable;
 
 import android.app.Activity;
@@ -19,6 +20,7 @@ import com.taobao.android.task.SafeAsyncTask;
  *
  * @author Oasis
  */
+@NonNullByDefault
 public class PanguApplication extends ApplicationCompat {
 
 	public interface CrossActivityLifecycleCallback {

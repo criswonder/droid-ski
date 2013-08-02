@@ -2,16 +2,18 @@ package com.taobao.android.compat;
 
 import java.util.ArrayList;
 
+import javax.annotation.NonNullByDefault;
 import javax.annotation.Nullable;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Application;
+import android.app.Application.ActivityLifecycleCallbacks;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 
-import com.taobao.android.compat.SharedPreferencesCompat.SharedPreferencesWrapper;
+import com.taobao.android.compat.ApplicationCompat.ActivityLifecycleCallbacksCompat;
 
 /**
  * Provide activity life-cycle callback APIs for API level ~13.
@@ -20,6 +22,7 @@ import com.taobao.android.compat.SharedPreferencesCompat.SharedPreferencesWrappe
  *
  * @author Oasis
  */
+@NonNullByDefault
 public class ApplicationCompat extends Application {
 
 	/** Backward-compatible version of {@link Application.ActivityLifecycleCallbacks} */
@@ -45,7 +48,8 @@ public class ApplicationCompat extends Application {
 		@Override public void onActivityDestroyed(Activity activity) {}
     }
 
-    public SharedPreferencesCompat getSharedPreferencesCompat(String name, int mode) {
+	@SuppressWarnings("null")	// SDK lacks @NonNull declaration
+	public SharedPreferencesCompat getSharedPreferencesCompat(String name, int mode) {
 		return new SharedPreferencesWrapper(super.getSharedPreferences(name, mode));
 	}
 
@@ -69,7 +73,7 @@ public class ApplicationCompat extends Application {
         }
 	}
 
-	/* package */ void dispatchActivityCreatedCompat(Activity activity, Bundle savedInstanceState) {
+	/* package */ void dispatchActivityCreatedCompat(Activity activity, @Nullable Bundle savedInstanceState) {
 		ActivityLifecycleCallbacksCompat[] callbacks = collectActivityLifecycleCallbacks();
         if (callbacks != null) {
             for (int i=0; i<callbacks.length; i++) {
@@ -143,31 +147,31 @@ public class ApplicationCompat extends Application {
     }
 
     private final ArrayList<ActivityLifecycleCallbacksCompat> mActivityLifecycleCallbacks = new ArrayList<ActivityLifecycleCallbacksCompat>();
+}
 
-    @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-	private class ActivityLifecycleCallbacksWrapper implements ActivityLifecycleCallbacks {
+@NonNullByDefault @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+class ActivityLifecycleCallbacksWrapper implements ActivityLifecycleCallbacks {
 
-    	@Override public void onActivityCreated(Activity activity, @Nullable Bundle savedInstanceState) { mCompat.onActivityCreated(activity, savedInstanceState); }
-		@Override public void onActivityStarted(Activity activity) { mCompat.onActivityStarted(activity); }
-		@Override public void onActivityResumed(Activity activity) { mCompat.onActivityResumed(activity); }
-		@Override public void onActivityPaused(Activity activity) { mCompat.onActivityPaused(activity); }
-		@Override public void onActivityStopped(Activity activity) { mCompat.onActivityStopped(activity); }
-		@Override public void onActivitySaveInstanceState(Activity activity, Bundle outState) { mCompat.onActivitySaveInstanceState(activity, outState); }
-		@Override public void onActivityDestroyed(Activity activity) { mCompat.onActivityDestroyed(activity); }
+	/* SDK lacks @NonNull declaration */
+	@SuppressWarnings("null") @Override public void onActivityCreated(Activity activity, @Nullable Bundle savedInstanceState) { mCompat.onActivityCreated(activity, savedInstanceState); }
+	@SuppressWarnings("null") @Override public void onActivityStarted(Activity activity) { mCompat.onActivityStarted(activity); }
+	@SuppressWarnings("null") @Override public void onActivityResumed(Activity activity) { mCompat.onActivityResumed(activity); }
+	@SuppressWarnings("null") @Override public void onActivityPaused(Activity activity) { mCompat.onActivityPaused(activity); }
+	@SuppressWarnings("null") @Override public void onActivityStopped(Activity activity) { mCompat.onActivityStopped(activity); }
+	@SuppressWarnings("null") @Override public void onActivitySaveInstanceState(Activity activity, Bundle outState) { mCompat.onActivitySaveInstanceState(activity, outState); }
+	@SuppressWarnings("null") @Override public void onActivityDestroyed(Activity activity) { mCompat.onActivityDestroyed(activity); }
 
-    	@Override public int hashCode() { return mCompat.hashCode(); }
+	@Override public int hashCode() { return mCompat.hashCode(); }
 
-    	@Override public boolean equals(@Nullable Object obj) {
-			if (this == obj) return true;
-			if (! (obj instanceof ActivityLifecycleCallbacksWrapper)) return false;
-			return mCompat.equals(((ActivityLifecycleCallbacksWrapper) obj).mCompat);
-		}
+	@Override public boolean equals(@Nullable Object obj) {
+		if (this == obj) return true;
+		if (! (obj instanceof ActivityLifecycleCallbacksWrapper)) return false;
+		return mCompat.equals(((ActivityLifecycleCallbacksWrapper) obj).mCompat);
+	}
 
-    	private ActivityLifecycleCallbacksWrapper(ActivityLifecycleCallbacksCompat compat) {
-    		if (compat == null) throw new NullPointerException();
-    		mCompat = compat;
-    	}
+	ActivityLifecycleCallbacksWrapper(ActivityLifecycleCallbacksCompat compat) {
+		mCompat = compat;
+	}
 
-    	private final ActivityLifecycleCallbacksCompat mCompat;
-    }
+	private final ActivityLifecycleCallbacksCompat mCompat;
 }
