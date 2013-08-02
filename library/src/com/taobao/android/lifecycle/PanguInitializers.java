@@ -13,10 +13,10 @@ import java.util.List;
 
 import android.app.Activity;
 import android.content.Context;
-import android.util.Log;
 import android.util.SparseArray;
 
 import com.taobao.android.base.Versions;
+import com.taobao.android.lifecycle.DemoApplication.DemoInitializers;
 import com.taobao.android.lifecycle.PanguApplication.CrossActivityLifecycleCallback;
 import com.taobao.android.task.Coordinator;
 import com.taobao.android.task.Coordinator.TaggedRunnable;
@@ -24,9 +24,10 @@ import com.taobao.android.task.Coordinator.TaggedRunnable;
 /**
  * Derive a class to add initialization methods named "initXXX()".
  *
+ * @see DemoInitializers
  * @author Oasis
  */
-public abstract class PangoInitializers {
+public abstract class PanguInitializers {
 
 	public static class UnqualifiedInitializerError extends Error {
 		public UnqualifiedInitializerError(String message) { super(message); }
@@ -74,12 +75,15 @@ public abstract class PangoInitializers {
 		application.registerCrossActivityLifecycleCallback(new CrossActivityLifecycleCallback() {
 
 			@Override public void onCreated(Activity activity) {
-				application.unregisterCrossActivityLifecycleCallback(this);
 				startInitializersAnnotatedBy(null);
 			}
 
+			@Override public void onStarted(Activity activity) {
+				application.unregisterCrossActivityLifecycleCallback(this);
+				Coordinator.scheduleIdleTasks();
+			}
+
 			@Override public void onStopped(Activity activity) {}
-			@Override public void onStarted(Activity activity) {}
 			@Override public void onDestroyed(Activity activity) {}
 		});
 	}
@@ -125,7 +129,6 @@ public abstract class PangoInitializers {
 		Method[] methods = getClass().getDeclaredMethods();
 		for (Method method : methods) {
 			String name = method.getName();
-			Log.d("PangoInitializers", getClass().toString() + ":"+ name);
 			if (name.length() < 5 || ! name.startsWith("init")
 					|| ! Character.isUpperCase(name.charAt(4))) continue;
 			if (debug) {		// Only check qualification in DEBUG build.
@@ -175,13 +178,14 @@ class DemoApplication extends PanguApplication {
 		new DemoInitializers().start(this);
 	}
 
-	static class DemoInitializers extends PangoInitializers {
+	/** Demonstrate the usage of PangoInitializers */
+	static class DemoInitializers extends PanguInitializers {
 
 		@Priority(2)
 		public void initImageManager() {}
 
 		@Async
-		public void initXXX() {}
+		public void initDnsPrefetcher() {}
 
 		@Delayed @Global
 		public void initGoogleAnalytics() {
@@ -196,11 +200,6 @@ class DemoApplication extends PanguApplication {
 			// Attempt to recovery from exception
 			// Prepare for safe-mode restart
 			// ...
-		}
-
-		public static void main(String[] args) {
-			PanguApplication application = null;
-			new DemoInitializers().start(application);
 		}
 	}
 }
