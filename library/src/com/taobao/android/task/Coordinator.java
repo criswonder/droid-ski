@@ -117,7 +117,7 @@ public class Coordinator {
 			mRunnable = runnable;
 		}
 
-		@Override @Nullable protected Void doInBackground(@SuppressWarnings("null") Void... params) {
+		@Override @Nullable protected Void doInBackground(Void... params) {
 			runWithTiming(mRunnable);
 			return null;
 		}

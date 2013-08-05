@@ -169,7 +169,7 @@ public abstract class PanguInitializers {
 		}
 	}
 
-	private PanguApplication mApplication;
+	private @Nullable PanguApplication mApplication;
 	private final SparseArray<List<Method>> mSyncInitializers = new SparseArray<List<Method>>();
 	private final List<Method> mAsyncInitializers = new ArrayList<Method>();
 	private final List<Method> mDelayedInitializers = new ArrayList<Method>();
