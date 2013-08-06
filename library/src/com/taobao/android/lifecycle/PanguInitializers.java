@@ -16,6 +16,7 @@ import javax.annotation.Nullable;
 
 import android.app.Activity;
 import android.content.Context;
+import android.util.Log;
 import android.util.SparseArray;
 
 import com.taobao.android.base.Versions;
@@ -143,7 +144,7 @@ public abstract class PanguInitializers {
 					throw new UnqualifiedInitializerError("Static: " + name);
 				if (method.getParameterTypes().length != 0)
 					throw new UnqualifiedInitializerError("With parameters: " + name);
-				if (method.getReturnType() != Void.class)
+				if (method.getReturnType() != void.class)
 					throw new UnqualifiedInitializerError("Non-void return type: " + name);
 			}
 
@@ -163,7 +164,7 @@ public abstract class PanguInitializers {
 
 	private void invokeInitializer(final Method method) {
 		try {
-			method.invoke(null);
+			method.invoke(this);
 		} catch (Exception e) {
 			onInitializerException(method, e);
 		}
