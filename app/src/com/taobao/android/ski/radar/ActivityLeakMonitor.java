@@ -71,7 +71,7 @@ public class ActivityLeakMonitor {
 			} else {
 				Log.d(TAG, mIdentifier + "was still occupied, dump");
 				
-				mYell.showNotification(TAG, mIdentifier, "has bean leaked");
+				mYell.showNotification(TAG, "One Activity Leak", mIdentifier);
 
 			    new Thread(new LeakActivityDumpThread(mIdentifier)).start();
 			}
@@ -89,17 +89,16 @@ public class ActivityLeakMonitor {
 	        if (state != null && state.equals(android.os.Environment.MEDIA_MOUNTED)){
 	        	
 	        	String sdcard = Environment.getExternalStorageDirectory().toString();
-	        	File fileDir = new File(sdcard,"MemoryMointor/"+ mAppContext.getPackageName() + "/leak_activity/"+ mTimeForName);
+	        	File fileDir = new File(sdcard,"MemoryMonitor/"+ mAppContext.getPackageName() + "/leak_activity/"+ mTimeForName);
 	        	fileDir.mkdirs();
 	        	File leakList = new File(fileDir.getAbsolutePath(),"ActivityList.txt");
 	        	FileOutputStream os = null;
 	        	try {
 	        		if(!leakList.exists())
 	        			leakList.createNewFile();
-					os = new FileOutputStream(leakList);
+					os = new FileOutputStream(leakList, true);
 					StringBuffer str = new StringBuffer();
-					
-					str.append("list:\r\n");
+
 					str.append(leakActivity+"\r\n");
 					os.write(str.toString().getBytes());
 				} catch (IOException e) {
