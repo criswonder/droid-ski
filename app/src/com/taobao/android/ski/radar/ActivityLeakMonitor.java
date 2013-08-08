@@ -22,7 +22,7 @@ public class ActivityLeakMonitor {
 	
 	private final static String TAG = "ActivityLeakMonitor";
 
-	private final static int ACTIVITY_MONITOR_INTVL = 20000;
+	private final static int ACTIVITY_MONITOR_INTVL = 30000;
 		
 	private static Context mAppContext;
 	private static Handler mHandler;
