@@ -25,13 +25,15 @@ import com.taobao.android.task.Coordinator;
 import com.taobao.android.task.Coordinator.TaggedRunnable;
 
 /**
- * Derive a class to add initialization methods named "initXXX()".
+ * Derive a class to add initializer methods named "initXXX()", which must be non-private
  *
  * @see DemoInitializers
  * @author Oasis
  */
 @NonNullByDefault
 public abstract class PanguInitializers {
+
+	private static final long KRequirementWaitingTimeout = 8000;	// In milliseconds
 
 	public static class UnqualifiedInitializerError extends Error {
 		public UnqualifiedInitializerError(String message) { super(message); }
@@ -65,10 +67,8 @@ public abstract class PanguInitializers {
 	 *  <b>Only valid when used together with {@link Async @Async}.</b>*/
 	@Target(ElementType.METHOD) @Retention(RetentionPolicy.RUNTIME)
 	protected @interface Require {
-		/** The initializer name without prefix "init". */
-		String value() default "";
-		/** Use this parameter if multiple initializers is required */
-		String[] all() default {};
+		/** The initializer names without prefix "init". */
+		String[] value() default {};
 	}
 
 	/** Should only be called in initializer method */
@@ -111,7 +111,7 @@ public abstract class PanguInitializers {
 			final Method method = iterator.next();
 			if (annotation != null && ! method.isAnnotationPresent(annotation)) continue;
 			Coordinator.postTask(new TaggedRunnable(method.getName()) { @Override public void run() {
-				invokeInitializer(method);
+				invokeInitializer(method, true);
 			}});
 			iterator.remove();
 		}
@@ -124,7 +124,7 @@ public abstract class PanguInitializers {
 				final Method method = iterator.next();
 				if (annotation != null && ! method.isAnnotationPresent(annotation)) continue;
 				Coordinator.runTask(new TaggedRunnable(method.getName()) { @Override public void run() {
-					invokeInitializer(method);
+					invokeInitializer(method, false);
 				}});
 				iterator.remove();
 			}
@@ -136,7 +136,7 @@ public abstract class PanguInitializers {
 			final Method method = iterator.next();
 			if (annotation != null && ! method.isAnnotationPresent(annotation)) continue;
 			Coordinator.postIdleTask(new TaggedRunnable(method.getName()) { @Override public void run() {
-				invokeInitializer(method);
+				invokeInitializer(method, true);
 			}});
 			iterator.remove();
 		}
@@ -174,19 +174,32 @@ public abstract class PanguInitializers {
 		}
 	}
 
-	private void invokeInitializer(final Method method) {
-//		Require requirement = method.getAnnotation(Require.class);
-//		if (requirement != null) {
-//			Method one = getInitializer(requirement.value());
-//			String[] more = requirement.all();
-//			if (one != null) {
-//				getInitializer(one);
-//			}
-//		}
+	private void invokeInitializer(final Method method, boolean check_requirement) {
+		Require requirement_annotation;
+		if (check_requirement && (requirement_annotation = method.getAnnotation(Require.class)) != null) {
+			for (String requirement_name: requirement_annotation.value()) {
+				if (requirement_name == null) continue;
+				Method requirement = getInitializer(requirement_name);
+				if (requirement == null) continue;
+				synchronized(requirement){
+				    while(! requirement.isAccessible()){
+				        try {
+				        	requirement.wait(KRequirementWaitingTimeout);
+						} catch (InterruptedException e) {
+							onInitializerException(method, e);
+						}
+				    }
+				}
+			}
+		}
 		try {
 			method.invoke(this);
 		} catch (Exception e) {
 			onInitializerException(method, e);
+		} finally {
+			synchronized(method) {
+				method.notifyAll();
+			}
 		}
 	}
 
@@ -217,19 +230,19 @@ class DemoApplication extends PanguApplication {
 	static class DemoInitializers extends PanguInitializers {
 
 		@Priority(2)
-		public void initImageManager() {}
+		void initImageManager() {}
 
 		@Async
-		public void initDnsPrefetcher() {}
+		void initDnsPrefetcher() {}
 
 		@Async
-		public void initOnlineConfig() {}
+		void initOnlineConfig() {}
 
-		@Async @Require("OnlineConfig")
-		public void init404Banner() {}
+		@Async @Require({"OnlineConfig"})
+		void init404Banner() {}
 
-		@Async @Require(all = {"OnlineConfig", "DnsPrefetcher"})
-		public void initPushAgent() {}
+		@Async @Require({"OnlineConfig", "DnsPrefetcher"})
+		void initPushAgent() {}
 
 		@Delayed @Global
 		public void initGoogleAnalytics() {
