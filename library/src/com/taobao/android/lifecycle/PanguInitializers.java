@@ -16,7 +16,6 @@ import javax.annotation.Nullable;
 
 import android.app.Activity;
 import android.content.Context;
-import android.util.Log;
 import android.util.SparseArray;
 
 import com.taobao.android.base.Versions;
@@ -61,6 +60,17 @@ public abstract class PanguInitializers {
 	@Target(ElementType.METHOD) @Retention(RetentionPolicy.RUNTIME)
 	protected @interface Global {}
 
+	/** Optionally annotate initXXX() method for dependency. The initializer will not run
+	 *  until all required initializers are finished.
+	 *  <b>Only valid when used together with {@link Async @Async}.</b>*/
+	@Target(ElementType.METHOD) @Retention(RetentionPolicy.RUNTIME)
+	protected @interface Require {
+		/** The initializer name without prefix "init". */
+		String value() default "";
+		/** Use this parameter if multiple initializers is required */
+		String[] all() default {};
+	}
+
 	/** Should only be called in initializer method */
 	@SuppressWarnings("null")	// Never be null when called in initializer method
 	protected PanguApplication getApplication() {
@@ -99,7 +109,7 @@ public abstract class PanguInitializers {
 		Iterator<Method> iterator = mAsyncInitializers.iterator();
 		while(iterator.hasNext()) {
 			final Method method = iterator.next();
-			if (annotation == null || ! method.isAnnotationPresent(annotation)) continue;
+			if (annotation != null && ! method.isAnnotationPresent(annotation)) continue;
 			Coordinator.postTask(new TaggedRunnable(method.getName()) { @Override public void run() {
 				invokeInitializer(method);
 			}});
@@ -112,6 +122,7 @@ public abstract class PanguInitializers {
 			iterator = mSyncInitializers.get(priority).iterator();
 			while(iterator.hasNext()) {
 				final Method method = iterator.next();
+				if (annotation != null && ! method.isAnnotationPresent(annotation)) continue;
 				Coordinator.runTask(new TaggedRunnable(method.getName()) { @Override public void run() {
 					invokeInitializer(method);
 				}});
@@ -123,6 +134,7 @@ public abstract class PanguInitializers {
 		iterator = mDelayedInitializers.iterator();
 		while(iterator.hasNext()) {
 			final Method method = iterator.next();
+			if (annotation != null && ! method.isAnnotationPresent(annotation)) continue;
 			Coordinator.postIdleTask(new TaggedRunnable(method.getName()) { @Override public void run() {
 				invokeInitializer(method);
 			}});
@@ -163,10 +175,27 @@ public abstract class PanguInitializers {
 	}
 
 	private void invokeInitializer(final Method method) {
+//		Require requirement = method.getAnnotation(Require.class);
+//		if (requirement != null) {
+//			Method one = getInitializer(requirement.value());
+//			String[] more = requirement.all();
+//			if (one != null) {
+//				getInitializer(one);
+//			}
+//		}
 		try {
 			method.invoke(this);
 		} catch (Exception e) {
 			onInitializerException(method, e);
+		}
+	}
+
+	private @Nullable Method getInitializer(String name) {
+		try {
+			return getClass().getDeclaredMethod("init" + name);
+		} catch (NoSuchMethodException e) {
+			if (Versions.isDebug()) throw new NoSuchMethodError(e.getMessage());
+			return null;
 		}
 	}
 
@@ -193,11 +222,19 @@ class DemoApplication extends PanguApplication {
 		@Async
 		public void initDnsPrefetcher() {}
 
+		@Async
+		public void initOnlineConfig() {}
+
+		@Async @Require("OnlineConfig")
+		public void init404Banner() {}
+
+		@Async @Require(all = {"OnlineConfig", "DnsPrefetcher"})
+		public void initPushAgent() {}
+
 		@Delayed @Global
 		public void initGoogleAnalytics() {
-			@SuppressWarnings("unused")
 			Context context = getApplication().getApplicationContext();
-			// Use context to initialize Google Analytics
+			context.getSystemService("~~~");
 		}
 
 		@Override
