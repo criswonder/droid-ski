@@ -198,6 +198,7 @@ public abstract class PanguInitializers {
 			onInitializerException(method, e);
 		} finally {
 			synchronized(method) {
+				method.setAccessible(true);
 				method.notifyAll();
 			}
 		}
