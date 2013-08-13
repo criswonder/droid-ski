@@ -33,7 +33,7 @@ public class SaturativeExecutor extends ThreadPoolExecutor {
 	private static final int MAX_POOL_SIZE = 128;
     private static final int KEEP_ALIVE = 1;			// In seconds
     private static final int QUEUE_CAPACITY = 1024;
-	private static final int MIN_THREADS_BEFORE_SATURATION = 16;
+	private static final int MIN_THREADS_BEFORE_SATURATION = 3;
 	private static final Pattern PATTERN_CPU_ENTRIES = Pattern.compile("cpu[0-9]+");
 
 	private static final boolean DEBUG = false;
