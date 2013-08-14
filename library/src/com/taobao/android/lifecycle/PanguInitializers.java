@@ -33,7 +33,7 @@ import com.taobao.android.task.Coordinator.TaggedRunnable;
 @NonNullByDefault
 public abstract class PanguInitializers {
 
-	private static final long KRequirementWaitingTimeout = 8000;	// In milliseconds
+	// TODO: Add dead-lock detector
 
 	public static class UnqualifiedInitializerError extends Error {
 		public UnqualifiedInitializerError(String message) { super(message); }
@@ -177,16 +177,17 @@ public abstract class PanguInitializers {
 	private void invokeInitializer(final Method method, boolean check_requirement) {
 		Require requirement_annotation;
 		if (check_requirement && (requirement_annotation = method.getAnnotation(Require.class)) != null) {
-			for (String requirement_name: requirement_annotation.value()) {
+			for (String requirement_name : requirement_annotation.value()) {
 				if (requirement_name == null) continue;
 				Method requirement = getInitializer(requirement_name);
 				if (requirement == null) continue;
 				synchronized(requirement){
-				    while(! requirement.isAccessible()){
+				    while(! requirement.isAccessible()){	// Use accessible as a flag for "finish".
 				        try {
-				        	requirement.wait(KRequirementWaitingTimeout);
+				        	requirement.wait();
 						} catch (InterruptedException e) {
 							onInitializerException(method, e);
+							break;
 						}
 				    }
 				}
@@ -205,12 +206,19 @@ public abstract class PanguInitializers {
 	}
 
 	private @Nullable Method getInitializer(String name) {
-		try {
-			return getClass().getDeclaredMethod("init" + name);
-		} catch (NoSuchMethodException e) {
-			if (Versions.isDebug()) throw new NoSuchMethodError(e.getMessage());
-			return null;
-		}
+		// NEVER use getDeclaredMethod() to get the initializer since we need the same instance for wait/notify.
+		String fullname = "init" + name;
+		// Traverse in probability order.
+		for (Method method : mAsyncInitializers)
+			if (fullname.equals(method.getName())) return method;
+		for (Method method : mDelayedInitializers)
+			if (fullname.equals(method.getName())) return method;
+		for (int i = 0; i < mSyncInitializers.size(); i ++)
+			for (Method method : mSyncInitializers.valueAt(i))
+				if (fullname.equals(method.getName())) return method;
+
+		if (Versions.isDebug()) throw new NoSuchMethodError(fullname + " (used in @Require)");
+		return null;
 	}
 
 	private @Nullable PanguApplication mApplication;
