@@ -2,6 +2,7 @@ package com.taobao.android.compat;
 
 import java.util.ArrayList;
 
+import javax.annotation.NonNull;
 import javax.annotation.NonNullByDefault;
 import javax.annotation.Nullable;
 
@@ -9,6 +10,7 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Application;
 import android.app.Application.ActivityLifecycleCallbacks;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
@@ -48,9 +50,10 @@ public class ApplicationCompat extends Application {
 		@Override public void onActivityDestroyed(Activity activity) {}
     }
 
-	@SuppressWarnings("null")	// SDK lacks @NonNull declaration
 	public SharedPreferencesCompat getSharedPreferencesCompat(String name, int mode) {
-		return new SharedPreferencesWrapper(super.getSharedPreferences(name, mode));
+		@NonNull @SuppressWarnings("null")	// SDK lacks @NonNull declaration
+		SharedPreferences prefs = super.getSharedPreferences(name, mode);
+		return new SharedPreferencesWrapper(prefs);
 	}
 
     /** Provide this method for API level ~13 */
