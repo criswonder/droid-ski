@@ -45,6 +45,7 @@ public class Dock extends Instrumentation {
 
 
 	private static long start = 0;
+	private static boolean hasResume = false;
 	
 	public static Dock getInstrumentationOf(Activity activity) {
 		try {
@@ -127,8 +128,11 @@ public class Dock extends Instrumentation {
         	Debug.stopMethodTracing();
         
         long resumeduration = System.currentTimeMillis() - start;
-		if ((mFlags & FLAG_LAUNCH_TIMING) != 0 && activity.getClass().getName().equals("com.taobao.tao.MainActivity2")) 
+        
+		if ((mFlags & FLAG_LAUNCH_TIMING) != 0 && activity.getClass().getName().equals("com.taobao.tao.MainActivity2") && !hasResume) {
 			notify("MainActivity Resume Time", resumeduration + "ms");
+			hasResume = true;
+		}
         
 	}
 
