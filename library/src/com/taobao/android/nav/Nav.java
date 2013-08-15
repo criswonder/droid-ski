@@ -22,6 +22,15 @@ import android.os.Bundle;
  */
 public class Nav {
 
+	public static interface NavPreprocessor {
+		/**
+		 * Check the intent and make changes if needed.
+		 *
+		 * @return true to pass, or false to abort the navigation request.
+		 */
+		boolean beforeNavTo(Intent intent);
+	}
+
 	/** @param context use current Activity if possible */
 	public static Nav from(Context context) {
 		return new Nav(context);
@@ -32,14 +41,12 @@ public class Nav {
 	 *  {@link android.content.Context#startActivity(Intent)} or its variants.
 	 */
 	public @Nullable Intent to(Uri uri) {
-		if (! mPreprocessor.isEmpty()) {
-			for (NavPreprocessor preprocessor : mPreprocessor) {
-				uri = preprocessor.beforeNavToUri(uri);
-				if (uri == null) return null;
-			}
-		}
 		Intent intent = new Intent(Intent.ACTION_VIEW, uri).setPackage(mContext.getPackageName());
 		if (mExtras != null) intent.putExtras(mExtras);
+		if (! mPreprocessor.isEmpty())
+			for (NavPreprocessor preprocessor : mPreprocessor)
+				if (! preprocessor.beforeNavTo(intent))
+					return null;
 		return intent;
 	}
 
@@ -49,10 +56,6 @@ public class Nav {
 		ComponentName component = intent.resolveActivity(mContext.getPackageManager());
 		intent.setComponent(component);
 		return intent;
-	}
-
-	public static interface NavPreprocessor {
-		Uri beforeNavToUri(Uri uri);
 	}
 
 	public static void registerPreprocessor(NavPreprocessor preprocessor) {
@@ -83,7 +86,7 @@ class DemoActivity extends Activity {
 		Intent intent = Nav.from(this).toActivity(uri);
 		if (intent == null) {
 			// Nothing to open
-		} else if (getComponentName().equals(intent.getComponent())) {
+		} else if (getComponentName().equals(intent.getComponent())) {		// Is target me?
 			// Open URI in current WebView.
 		} else {
 			startActivity(intent);
