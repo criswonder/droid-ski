@@ -44,6 +44,8 @@ public class Dock extends Instrumentation {
 	public static final String KEY_THREASHOLD = "choreographer";
 
 
+	private static long start = 0;
+	
 	public static Dock getInstrumentationOf(Activity activity) {
 		try {
 			Field f = Activity.class.getDeclaredField("mInstrumentation");
@@ -103,7 +105,7 @@ public class Dock extends Instrumentation {
 		SysLogMon.start(this, mThreshold);
 		
 		// Start launch intent of the app.
-		long start = System.currentTimeMillis();
+		start = System.currentTimeMillis();
 		getTargetContext().startActivity(intent);
 		waitForMonitor(monitor);
 		waitForIdleSync();
@@ -123,6 +125,11 @@ public class Dock extends Instrumentation {
         if ((mFlags & FLAG_LAUNCH_PROFILING) != 0
         		&& activity.getClass().getName().equals("com.taobao.tao.MainActivity2"))
         	Debug.stopMethodTracing();
+        
+        long resumeduration = System.currentTimeMillis() - start;
+		if ((mFlags & FLAG_LAUNCH_TIMING) != 0 && activity.getClass().getName().equals("com.taobao.tao.MainActivity2")) 
+			notify("MainActivity Resume Time", resumeduration + "ms");
+        
 	}
 
 	@Override
