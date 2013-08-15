@@ -25,8 +25,16 @@ public class PanguApplication extends ApplicationCompat {
 
 	/** Expanded version of original ActivityLifecycleCallbacksCompat */
 	public interface ActivityLifecycleCallbacks2 extends ActivityLifecycleCallbacksCompat {
-		void onActivityPostCreated(PanguActivity activity, @Nullable Bundle savedInstanceState);
-		void onActivityPostResumed(PanguActivity activity);
+		/**
+		 * Called before {@link android.app.Activity#onCreate(Bundle savedInstanceState)}
+		 *
+		 * <p>Note: This relies on all sub-classes of {@link PanguActivity} calling <code>super.onCreate()</code> first.
+		 */
+		void onActivityPreCreate(PanguActivity activity, @Nullable Bundle savedInstanceState);
+		/** Called before {@link android.app.Activity#onPostCreate(Bundle savedInstanceState)} */
+		void onActivityPostCreate(PanguActivity activity, @Nullable Bundle savedInstanceState);
+		/** Called before {@link android.app.Activity#onPostResume(Bundle savedInstanceState)} */
+		void onActivityPostResume(PanguActivity activity);
 	}
 
 	public interface CrossActivityLifecycleCallback {
@@ -73,14 +81,19 @@ public class PanguApplication extends ApplicationCompat {
 		SafeAsyncTask.init();
 	}
 
+	void dispatchActivityPreCreate(PanguActivity activity, @Nullable Bundle savedInstanceState) {
+		for (ActivityLifecycleCallbacks2 callbacks : mActivityLifecycleCallbacks)
+            callbacks.onActivityPreCreate(activity, savedInstanceState);
+	}
+
 	void dispatchActivityPostCreated(PanguActivity activity, @Nullable Bundle savedInstanceState) {
 		for (ActivityLifecycleCallbacks2 callbacks : mActivityLifecycleCallbacks)
-            callbacks.onActivityPostCreated(activity, savedInstanceState);
+            callbacks.onActivityPostCreate(activity, savedInstanceState);
     }
 
 	void dispatchActivityPostResumed(PanguActivity activity) {
 		for (ActivityLifecycleCallbacks2 callbacks : mActivityLifecycleCallbacks)
-            callbacks.onActivityPostResumed(activity);
+            callbacks.onActivityPostResume(activity);
     }
 
 	private final List<ActivityLifecycleCallbacks2> mActivityLifecycleCallbacks = new CopyOnWriteArrayList<ActivityLifecycleCallbacks2>();

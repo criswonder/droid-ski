@@ -16,6 +16,12 @@ import com.taobao.android.lifecycle.PanguApplication.ActivityLifecycleCallbacks2
 @NonNullByDefault
 public class PanguActivity extends FragmentActivityCompat {
 
+	@Override protected void onCreate(@Nullable Bundle savedInstanceState) {
+		// This assumes all sub-classes call super.onCreate() first.
+		getPanguApplication().dispatchActivityPreCreate(this, savedInstanceState);
+		super.onCreate(savedInstanceState);
+	}
+
 	/** @see PanguApplication#registerActivityLifecycleCallbacks(ActivityLifecycleCallbacks2) */
 	@Override protected void onPostCreate(@Nullable Bundle savedInstanceState) {
 		super.onPostCreate(savedInstanceState);
