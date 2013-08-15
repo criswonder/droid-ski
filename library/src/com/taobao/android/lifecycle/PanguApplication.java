@@ -82,18 +82,21 @@ public class PanguApplication extends ApplicationCompat {
 	}
 
 	void dispatchActivityPreCreate(PanguActivity activity, @Nullable Bundle savedInstanceState) {
-		for (ActivityLifecycleCallbacks2 callbacks : mActivityLifecycleCallbacks)
-            callbacks.onActivityPreCreate(activity, savedInstanceState);
+		if (! mActivityLifecycleCallbacks.isEmpty())
+			for (ActivityLifecycleCallbacks2 callbacks : mActivityLifecycleCallbacks)
+	            callbacks.onActivityPreCreate(activity, savedInstanceState);
 	}
 
 	void dispatchActivityPostCreated(PanguActivity activity, @Nullable Bundle savedInstanceState) {
-		for (ActivityLifecycleCallbacks2 callbacks : mActivityLifecycleCallbacks)
-            callbacks.onActivityPostCreate(activity, savedInstanceState);
+		if (! mActivityLifecycleCallbacks.isEmpty())
+			for (ActivityLifecycleCallbacks2 callbacks : mActivityLifecycleCallbacks)
+	            callbacks.onActivityPostCreate(activity, savedInstanceState);
     }
 
 	void dispatchActivityPostResumed(PanguActivity activity) {
-		for (ActivityLifecycleCallbacks2 callbacks : mActivityLifecycleCallbacks)
-            callbacks.onActivityPostResume(activity);
+		if (! mActivityLifecycleCallbacks.isEmpty())
+			for (ActivityLifecycleCallbacks2 callbacks : mActivityLifecycleCallbacks)
+	            callbacks.onActivityPostResume(activity);
     }
 
 	private final List<ActivityLifecycleCallbacks2> mActivityLifecycleCallbacks = new CopyOnWriteArrayList<ActivityLifecycleCallbacks2>();
@@ -105,25 +108,25 @@ public class PanguApplication extends ApplicationCompat {
 	class CrossActivityLifecycleCallbacks implements ActivityLifecycleCallbacksCompat {
 
 		@Override public void onActivityCreated(Activity activity, @Nullable Bundle savedInstanceState) {
-			if (mCreationCount.getAndIncrement() == 0)
+			if (mCreationCount.getAndIncrement() == 0 && ! mCrossActivityLifecycleCallbacks.isEmpty())
 	            for (CrossActivityLifecycleCallback callback : mCrossActivityLifecycleCallbacks)
 	            	callback.onCreated(activity);
 		}
 
 		@Override public void onActivityStarted(Activity activity) {
-			if (mStartCount.getAndIncrement() == 0)
+			if (mStartCount.getAndIncrement() == 0 && ! mCrossActivityLifecycleCallbacks.isEmpty())
 	            for (CrossActivityLifecycleCallback callback : mCrossActivityLifecycleCallbacks)
 	            	callback.onStarted(activity);
 		}
 
 		@Override public void onActivityStopped(Activity activity) {
-			if (mStartCount.decrementAndGet() == 0)
+			if (mStartCount.decrementAndGet() == 0 && ! mCrossActivityLifecycleCallbacks.isEmpty())
 	            for (CrossActivityLifecycleCallback callback : mCrossActivityLifecycleCallbacks)
 	                callback.onStopped(activity);
 		}
 
 		@Override public void onActivityDestroyed(Activity activity) {
-			if (mCreationCount.decrementAndGet() == 0)
+			if (mCreationCount.decrementAndGet() == 0 && ! mCrossActivityLifecycleCallbacks.isEmpty())
 	            for (CrossActivityLifecycleCallback callback : mCrossActivityLifecycleCallbacks)
 	                callback.onDestroyed(activity);
 		}
