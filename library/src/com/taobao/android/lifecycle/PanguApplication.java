@@ -117,11 +117,23 @@ public class PanguApplication extends ApplicationCompat {
 	            callbacks.onActivityPreCreate(activity, savedInstanceState);
 	}
 
-	void dispatchActivityPostCreated(PanguActivity activity, @Nullable Bundle savedInstanceState) {
+	void dispatchActivityPostCreate(PanguActivity activity, @Nullable Bundle savedInstanceState) {
 		if (! mActivityLifecycleCallbacks.isEmpty())
 			for (ActivityLifecycleCallbacks2 callbacks : mActivityLifecycleCallbacks)
 	            callbacks.onActivityPostCreate(activity, savedInstanceState);
     }
+
+	void dispatchActivityPreRestart(PanguActivity activity) {
+		if (! mActivityLifecycleCallbacks.isEmpty())
+			for (ActivityLifecycleCallbacks2 callbacks : mActivityLifecycleCallbacks)
+	            callbacks.onActivityPreRestart(activity);
+	}
+
+	void dispatchActivityPreResume(PanguActivity activity) {
+		if (! mActivityLifecycleCallbacks.isEmpty())
+			for (ActivityLifecycleCallbacks2 callbacks : mActivityLifecycleCallbacks)
+	            callbacks.onActivityPreResume(activity);
+	}
 
 	void dispatchActivityPostResumed(PanguActivity activity) {
 		if (! mActivityLifecycleCallbacks.isEmpty())
