@@ -23,18 +23,46 @@ import com.taobao.android.task.SafeAsyncTask;
 @NonNullByDefault
 public class PanguApplication extends ApplicationCompat {
 
-	/** Expanded version of original ActivityLifecycleCallbacksCompat */
+	/**
+	 * Expanded version of original ActivityLifecycleCallbacksCompat.
+	 *
+	 * <p>Since this interface may be further expanded to provide more events,
+	 * it is strongly encouraged to extend {@link AbstractActivityLifecycleCallbacks2} instead,
+	 * to keep <b>forward-compatibility</b>.
+	 */
 	public interface ActivityLifecycleCallbacks2 extends ActivityLifecycleCallbacksCompat {
 		/**
 		 * Called before {@link android.app.Activity#onCreate(Bundle savedInstanceState)}
 		 *
-		 * <p>Note: This relies on all sub-classes of {@link PanguActivity} calling <code>super.onCreate()</code> first.
+		 * <p>Note: This relies on all sub-classes of {@link PanguActivity} calling <code>super.onCreate()</code> <b>first</b>.
 		 */
 		void onActivityPreCreate(PanguActivity activity, @Nullable Bundle savedInstanceState);
 		/** Called before {@link android.app.Activity#onPostCreate(Bundle savedInstanceState)} */
 		void onActivityPostCreate(PanguActivity activity, @Nullable Bundle savedInstanceState);
+		/**
+		 * Called before {@link android.app.Activity#onRestart()}
+		 *
+		 * <p>Note: This relies on all sub-classes of {@link PanguActivity} calling <code>super.onRestart()</code> <b>first</b>.
+		 */
+		void onActivityPreRestart(PanguActivity activity);
+		/**
+		 * Called before {@link android.app.Activity#onResume()}
+		 *
+		 * <p>Note: This relies on all sub-classes of {@link PanguActivity} calling <code>super.onResume()</code> <b>first</b>.
+		 */
+		void onActivityPreResume(PanguActivity activity);
 		/** Called before {@link android.app.Activity#onPostResume(Bundle savedInstanceState)} */
 		void onActivityPostResume(PanguActivity activity);
+	}
+
+    /** Empty implementation of {@link ActivityLifecycleCallbacks2} for subset overriding */
+	public static class AbstractActivityLifecycleCallbacks2 extends AbstractActivityLifecycleCallbacks implements ActivityLifecycleCallbacks2 {
+
+		@Override public void onActivityPreCreate(PanguActivity activity, @Nullable Bundle savedInstanceState) {}
+		@Override public void onActivityPostCreate(PanguActivity activity, @Nullable Bundle savedInstanceState) {}
+		@Override public void onActivityPreRestart(PanguActivity activity) {}
+		@Override public void onActivityPreResume(PanguActivity activity) {}
+		@Override public void onActivityPostResume(PanguActivity activity) {}
 	}
 
 	public interface CrossActivityLifecycleCallback {
