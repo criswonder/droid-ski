@@ -82,11 +82,13 @@ public class PanguApplication extends ApplicationCompat {
 	 * Only work for {@link PanguActivity} derived activities.
 	 */
 	public void registerActivityLifecycleCallbacks(ActivityLifecycleCallbacks2 callbacks) {
+		super.registerActivityLifecycleCallbacks(callbacks);
 		mActivityLifecycleCallbacks.add(callbacks);
 	}
 
-	public void unregisterActivityLifecycleCallbacks(ActivityLifecycleCallbacks2 callback) {
-		mActivityLifecycleCallbacks.remove(callback);
+	public void unregisterActivityLifecycleCallbacks(ActivityLifecycleCallbacks2 callbacks) {
+		super.unregisterActivityLifecycleCallbacks(callbacks);
+		mActivityLifecycleCallbacks.remove(callbacks);
 	}
 
 	public void registerCrossActivityLifecycleCallback(CrossActivityLifecycleCallback callback) {
