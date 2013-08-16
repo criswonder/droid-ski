@@ -78,14 +78,17 @@ public class Nav {
 /** Demonstrate the usage of {@link Nav} */
 class DemoActivity extends Activity {
 
-	void startActivity(Uri uri) {
+	void openUri(Uri uri) {
 		startActivity(Nav.from(this).to(uri));
 	}
 
-	void startActivityWithinWebview(Uri uri) {
+	void openUriWithinWebview(Uri uri) {
 		Intent intent = Nav.from(this).toActivity(uri);
 		if (intent == null) {
 			// Nothing to open
+		} else if (intent.getComponent() == null) {
+			// Try to resolve it in system scope.
+			// If succeed, start the intent, otherwise open in current WebView.
 		} else if (getComponentName().equals(intent.getComponent())) {		// Is target me?
 			// Open URI in current WebView.
 		} else {
