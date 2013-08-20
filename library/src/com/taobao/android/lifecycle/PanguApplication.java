@@ -39,6 +39,14 @@ public class PanguApplication extends ApplicationCompat {
 		void onActivityPreCreate(PanguActivity activity, @Nullable Bundle savedInstanceState);
 		/** Called before {@link android.app.Activity#onPostCreate(Bundle savedInstanceState)} */
 		void onActivityPostCreate(PanguActivity activity, @Nullable Bundle savedInstanceState);
+		
+		/**
+		 * Called before {@link android.app.Activity#onStart()}
+		 *
+		 * <p>Note: This relies on all sub-classes of {@link PanguActivity} calling <code>super.onStart()</code> <b>first</b>.
+		 */
+		void onActivityPreStart(PanguActivity activity);
+		
 		/**
 		 * Called before {@link android.app.Activity#onRestart()}
 		 *
@@ -53,6 +61,9 @@ public class PanguApplication extends ApplicationCompat {
 		void onActivityPreResume(PanguActivity activity);
 		/** Called before {@link android.app.Activity#onPostResume(Bundle savedInstanceState)} */
 		void onActivityPostResume(PanguActivity activity);
+		
+		/** Called before {@link android.app.Activity#onWindowFocusChanged(boolean hasFocus) */
+	    void onWindowFocusChanged(boolean hasFocus);
 	}
 
     /** Empty implementation of {@link ActivityLifecycleCallbacks2} for subset overriding */
@@ -60,9 +71,11 @@ public class PanguApplication extends ApplicationCompat {
 
 		@Override public void onActivityPreCreate(PanguActivity activity, @Nullable Bundle savedInstanceState) {}
 		@Override public void onActivityPostCreate(PanguActivity activity, @Nullable Bundle savedInstanceState) {}
+		@Override public void onActivityPreStart(PanguActivity activity) {}
 		@Override public void onActivityPreRestart(PanguActivity activity) {}
 		@Override public void onActivityPreResume(PanguActivity activity) {}
 		@Override public void onActivityPostResume(PanguActivity activity) {}
+		@Override public void onWindowFocusChanged(boolean hasFocus) {}
 	}
 
 	public interface CrossActivityLifecycleCallback {
@@ -123,6 +136,12 @@ public class PanguApplication extends ApplicationCompat {
 	            callbacks.onActivityPostCreate(activity, savedInstanceState);
     }
 
+	void dispatchActivityPreStart(PanguActivity activity) {
+		if (! mActivityLifecycleCallbacks.isEmpty())
+			for (ActivityLifecycleCallbacks2 callbacks : mActivityLifecycleCallbacks)
+	            callbacks.onActivityPreStart(activity);
+	}
+	
 	void dispatchActivityPreRestart(PanguActivity activity) {
 		if (! mActivityLifecycleCallbacks.isEmpty())
 			for (ActivityLifecycleCallbacks2 callbacks : mActivityLifecycleCallbacks)
@@ -140,6 +159,12 @@ public class PanguApplication extends ApplicationCompat {
 			for (ActivityLifecycleCallbacks2 callbacks : mActivityLifecycleCallbacks)
 	            callbacks.onActivityPostResume(activity);
     }
+	
+	void dispatchActivityWindowFocusChanged(boolean hasFocus) {
+		if (! mActivityLifecycleCallbacks.isEmpty())
+			for (ActivityLifecycleCallbacks2 callbacks : mActivityLifecycleCallbacks)
+	            callbacks.onWindowFocusChanged(hasFocus);
+	}
 
 	private final List<ActivityLifecycleCallbacks2> mActivityLifecycleCallbacks = new CopyOnWriteArrayList<ActivityLifecycleCallbacks2>();
 	private final List<CrossActivityLifecycleCallback> mCrossActivityLifecycleCallbacks = new CopyOnWriteArrayList<CrossActivityLifecycleCallback>();

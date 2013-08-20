@@ -25,6 +25,11 @@ public class PanguActivity extends FragmentActivityCompat {
         getPanguApplication().dispatchActivityPostCreate(this, savedInstanceState);
 	}
 
+	@Override protected void onStart() {
+		getPanguApplication().dispatchActivityPreStart(this);
+		super.onStart();
+	}
+	
 	@Override protected void onRestart() {
 		getPanguApplication().dispatchActivityPreRestart(this);
 		super.onRestart();
@@ -39,6 +44,11 @@ public class PanguActivity extends FragmentActivityCompat {
 		super.onPostResume();
 		getPanguApplication().dispatchActivityPostResumed(this);
 	}
+	
+	@Override public void onWindowFocusChanged(boolean hasFocus) {
+		getPanguApplication().dispatchActivityWindowFocusChanged(hasFocus);
+		super.onWindowFocusChanged(hasFocus);
+    }
 
 	@SuppressWarnings("null")	// SDK lacks @NonNull declaration
 	private PanguApplication getPanguApplication() {
