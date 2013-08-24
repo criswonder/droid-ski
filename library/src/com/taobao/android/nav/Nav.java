@@ -22,6 +22,8 @@ import android.os.Bundle;
  */
 public class Nav {
 
+	public static final String KExtraReferrer = "referrer";
+
 	public static interface NavPreprocessor {
 		/**
 		 * Check the intent and make changes if needed.
@@ -32,7 +34,7 @@ public class Nav {
 	}
 
 	/** @param context use current Activity if possible */
-	public static Nav from(Context context) {
+	public static Nav from(final Context context) {
 		return new Nav(context);
 	}
 
@@ -40,33 +42,43 @@ public class Nav {
 	 *  <b>Intent returned by this method should NEVER be kept</b>, but used immediately in
 	 *  {@link android.content.Context#startActivity(Intent)} or its variants.
 	 */
-	public @Nullable Intent to(Uri uri) {
-		Intent intent = new Intent(Intent.ACTION_VIEW, uri).setPackage(mContext.getPackageName());
+	public @Nullable Intent to(final Uri uri) {
+		final Intent intent = new Intent(Intent.ACTION_VIEW, uri).setPackage(mContext.getPackageName());
+		if (mContext instanceof Activity) {
+			final Intent from_intent = ((Activity) mContext).getIntent();
+			if (from_intent != null) {
+				final Uri referrer_uri = from_intent.getData(); ComponentName comp;
+				if (referrer_uri != null) intent.putExtra(KExtraReferrer, referrer_uri.toString());
+				else if ((comp = from_intent.getComponent()) != null)		// Compact (component only)
+					intent.putExtra(KExtraReferrer, new Intent().setComponent(comp).toUri(0));
+				else intent.putExtra(KExtraReferrer, from_intent.toUri(0));	// Legacy
+			}
+		}
 		if (mExtras != null) intent.putExtras(mExtras);
 		if (! mPreprocessor.isEmpty())
-			for (NavPreprocessor preprocessor : mPreprocessor)
+			for (final NavPreprocessor preprocessor : mPreprocessor)
 				if (! preprocessor.beforeNavTo(intent))
 					return null;
 		return intent;
 	}
 
-	public @Nullable Intent toActivity(Uri uri) {
-		Intent intent = to(uri);
+	public @Nullable Intent toActivity(final Uri uri) {
+		final Intent intent = to(uri);
 		if (intent == null) return null;
-		ComponentName component = intent.resolveActivity(mContext.getPackageManager());
+		final ComponentName component = intent.resolveActivity(mContext.getPackageManager());
 		intent.setComponent(component);
 		return intent;
 	}
 
-	public static void registerPreprocessor(NavPreprocessor preprocessor) {
+	public static void registerPreprocessor(final NavPreprocessor preprocessor) {
 		mPreprocessor.add(preprocessor);
 	}
 
-	public static void unregisterPreprocessor(NavPreprocessor preprocessor) {
+	public static void unregisterPreprocessor(final NavPreprocessor preprocessor) {
 		mPreprocessor.remove(preprocessor);
 	}
 
-	private Nav(Context context) {
+	private Nav(final Context context) {
 		mContext = context;
 	}
 
@@ -78,12 +90,12 @@ public class Nav {
 /** Demonstrate the usage of {@link Nav} */
 class DemoActivity extends Activity {
 
-	void openUri(Uri uri) {
+	void openUri(final Uri uri) {
 		startActivity(Nav.from(this).to(uri));
 	}
 
-	void openUriWithinWebview(Uri uri) {
-		Intent intent = Nav.from(this).toActivity(uri);
+	void openUriWithinWebview(final Uri uri) {
+		final Intent intent = Nav.from(this).toActivity(uri);
 		if (intent == null) {
 			// Nothing to open
 		} else if (intent.getComponent() == null) {
