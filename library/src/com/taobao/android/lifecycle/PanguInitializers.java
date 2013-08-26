@@ -82,7 +82,7 @@ public abstract class PanguInitializers {
 	public void start(final PanguApplication application) {
 		mApplication = application;
 
-		Coordinator.runTask(new TaggedRunnable("PangoInitializers.parse") { @Override public void run() {
+		Coordinator.runTask(new TaggedRunnable("initPangoParse") { @Override public void run() {
 			parse();
 		}});
 

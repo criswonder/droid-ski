@@ -8,6 +8,9 @@ import java.util.concurrent.Executor;
 import javax.annotation.NonNullByDefault;
 import javax.annotation.Nullable;
 
+import com.taobao.android.base.Tools;
+import com.taobao.android.base.Versions;
+
 import android.annotation.TargetApi;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -75,10 +78,17 @@ public class Coordinator {
 			failed = true;
 			Log.w(TAG, "Exception in " + runnable.tag, e);
 		} finally {
-			cputime = Debug.threadCpuTimeNanos() - cputime;
-			time = System.nanoTime() - time;
-			Log.i(TAG, "Timing - " + runnable.tag + (failed ? " (failed): " : ": ")
-					+ cputime / 1000000 + "ms (cpu) / " + time / 1000000 + "ms (real)");
+			cputime = (Debug.threadCpuTimeNanos() - cputime) / 1000000;
+			time = (System.nanoTime() - time) / 1000000;
+			
+			if(mTimeingCallback != null){
+				mTimeingCallback.onTimingCallback(runnable.tag, cputime, time);
+			}
+			
+			if(Versions.isDebug()) {
+				Log.i(TAG, "Timing - " + runnable.tag + (failed ? " (failed): " : ": ")
+						+ cputime / 1000000 + "ms (cpu) / " + time / 1000000 + "ms (real)");
+			}
 		}
 	}
 
@@ -97,8 +107,13 @@ public class Coordinator {
 		return mExecutor;
 	}
 
+	public static void setTimingCallback(CoordinatorTimingCallback timeingCallback) {
+		mTimeingCallback = timeingCallback;
+	}
+	
 	private static final Queue<TaggedRunnable> mIdleTasks = new LinkedList<TaggedRunnable>();
 	private static final Executor mExecutor;
+	private static CoordinatorTimingCallback mTimeingCallback = null;
 	private static final String TAG = "Coord";
 
 	static {
