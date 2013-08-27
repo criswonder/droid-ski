@@ -3,22 +3,16 @@ package com.taobao.android.base;
 import static android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
 
 import javax.annotation.NonNullByDefault;
 
 import android.app.Application;
 import android.content.pm.ApplicationInfo;
 import android.os.Environment;
-import android.util.Log;
 
 import com.taobao.android.ski.BuildConfig;
-import com.taobao.android.ski.gear.Coordinator;
-import com.taobao.android.ski.gear.Coordinator.TaggedRunnable;
+import com.taobao.android.task.Coordinator;
+import com.taobao.android.task.Coordinator.TaggedRunnable;
 
 /** @author Oasis */
 @NonNullByDefault
@@ -41,7 +35,7 @@ public class Versions {
     /** Call this method in Application.onCreate() */
     public static void init(final Application application) {
     	
-    	Coordinator.runTasks(new TaggedRunnable("initCheckMTLMode") { @Override public void run() {
+    	Coordinator.runTasks(new TaggedRunnable("CheckMTLMode") { @Override public void run() {
     		StringBuilder sb = (new StringBuilder()).append(
     				Environment.getExternalStorageDirectory().toString())
     				.append(File.separator).append("MTL_IOT");

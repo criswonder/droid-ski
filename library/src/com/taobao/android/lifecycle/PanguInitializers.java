@@ -10,12 +10,14 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.NonNullByDefault;
 import javax.annotation.Nullable;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Debug;
 import android.util.SparseArray;
 
 import com.taobao.android.base.Versions;
@@ -78,6 +80,14 @@ public abstract class PanguInitializers {
 	}
 
 	public abstract void onInitializerException(Method method, Exception exception);
+	
+	public void onInitializerTimeing(String name, long cpu, long real){
+		
+	}
+	
+	public void onInitializerFinish(){
+		
+	}
 
 	public void start(final PanguApplication application) {
 		mApplication = application;
@@ -160,6 +170,7 @@ public abstract class PanguInitializers {
 					throw new UnqualifiedInitializerError("Non-void return type: " + name);
 			}
 
+			mMethodCount.getAndIncrement();
 			if (method.isAnnotationPresent(Delayed.class)) {
 				mDelayedInitializers.add(method);
 			} else if (method.isAnnotationPresent(Async.class)) {
@@ -193,14 +204,25 @@ public abstract class PanguInitializers {
 				}
 			}
 		}
+		
+		long time = System.nanoTime();
+		long cputime = Debug.threadCpuTimeNanos();
 		try {
-			method.invoke(this);
+			method.invoke(this);			
 		} catch (Exception e) {
 			onInitializerException(method, e);
 		} finally {
 			synchronized(method) {
 				method.setAccessible(true);
 				method.notifyAll();
+			}
+			
+			cputime = (Debug.threadCpuTimeNanos() - cputime) / 1000000;
+			time = (System.nanoTime() - time) / 1000000;
+			onInitializerTimeing(method.getName().substring(4), cputime, time);
+			
+			if(mMethodCount.decrementAndGet() == 0){
+				onInitializerFinish();
 			}
 		}
 	}
@@ -225,6 +247,7 @@ public abstract class PanguInitializers {
 	private final SparseArray<List<Method>> mSyncInitializers = new SparseArray<List<Method>>();
 	private final List<Method> mAsyncInitializers = new ArrayList<Method>();
 	private final List<Method> mDelayedInitializers = new ArrayList<Method>();
+	private final AtomicInteger mMethodCount = new AtomicInteger();
 }
 
 @NonNullByDefault

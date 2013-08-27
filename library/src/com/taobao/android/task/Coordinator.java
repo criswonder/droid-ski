@@ -81,10 +81,6 @@ public class Coordinator {
 			cputime = (Debug.threadCpuTimeNanos() - cputime) / 1000000;
 			time = (System.nanoTime() - time) / 1000000;
 			
-			if(mTimeingCallback != null){
-				mTimeingCallback.onTimingCallback(runnable.tag, cputime, time);
-			}
-			
 			if(Versions.isDebug()) {
 				Log.i(TAG, "Timing - " + runnable.tag + (failed ? " (failed): " : ": ")
 						+ cputime / 1000000 + "ms (cpu) / " + time / 1000000 + "ms (real)");
@@ -106,14 +102,9 @@ public class Coordinator {
 	static Executor getCurrentExecutor() {
 		return mExecutor;
 	}
-
-	public static void setTimingCallback(CoordinatorTimingCallback timeingCallback) {
-		mTimeingCallback = timeingCallback;
-	}
 	
 	private static final Queue<TaggedRunnable> mIdleTasks = new LinkedList<TaggedRunnable>();
 	private static final Executor mExecutor;
-	private static CoordinatorTimingCallback mTimeingCallback = null;
 	private static final String TAG = "Coord";
 
 	static {
