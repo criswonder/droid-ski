@@ -8,9 +8,6 @@ import java.util.concurrent.Executor;
 import javax.annotation.NonNullByDefault;
 import javax.annotation.Nullable;
 
-import com.taobao.android.base.Tools;
-import com.taobao.android.base.Versions;
-
 import android.annotation.TargetApi;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -20,39 +17,41 @@ import android.os.Looper;
 import android.os.MessageQueue.IdleHandler;
 import android.util.Log;
 
+import com.taobao.android.base.Versions;
+
 /** @author Oasis */
 @NonNullByDefault
 public class Coordinator {
 
 	public static abstract class TaggedRunnable implements Runnable {
-		public TaggedRunnable(String tag) { this.tag = tag; }
+		public TaggedRunnable(final String tag) { this.tag = tag; }
 		private final String tag;
 	}
 
 	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
-	public static void postTask(TaggedRunnable runnable) {
-		StandaloneTask task = new StandaloneTask(runnable);
+	public static void postTask(final TaggedRunnable runnable) {
+		final StandaloneTask task = new StandaloneTask(runnable);
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB)
 			task.execute();
 		else
 			task.executeOnExecutor(mExecutor);
 	}
 
-	public static void postTasks(TaggedRunnable... runnables) {
-		for (TaggedRunnable runnable : runnables)
+	public static void postTasks(final TaggedRunnable... runnables) {
+		for (final TaggedRunnable runnable : runnables)
 			if (runnable != null) postTask(runnable);
 	}
 
-	public static void postIdleTask(TaggedRunnable runnable) {
+	public static void postIdleTask(final TaggedRunnable runnable) {
 		mIdleTasks.add(runnable);
 	}
 
-	public static void runTask(TaggedRunnable runnable) {
+	public static void runTask(final TaggedRunnable runnable) {
 		runWithTiming(runnable);
 	}
 
-	public static void runTasks(TaggedRunnable... runnables) {
-		for (TaggedRunnable runnable : runnables)
+	public static void runTasks(final TaggedRunnable... runnables) {
+		for (final TaggedRunnable runnable : runnables)
 			if (runnable != null) runWithTiming(runnable);
 	}
 
@@ -61,27 +60,32 @@ public class Coordinator {
 		Looper.myQueue().addIdleHandler(new IdleHandler() {
 
 			@Override public boolean queueIdle() {
-				TaggedRunnable task = mIdleTasks.poll();	// One at a time to avoid congestion.
+				final TaggedRunnable task = mIdleTasks.poll();	// One at a time to avoid congestion.
 				if (task == null) return false;
 				postTask(task);
 				return ! mIdleTasks.isEmpty();
-			}});
+			}
+		});
 	}
 
-	private static void runWithTiming(TaggedRunnable runnable) {
+	private static void runWithTiming(final TaggedRunnable runnable) {
 		boolean failed = false;
-		long time = System.nanoTime();
-		long cputime = Debug.threadCpuTimeNanos();
+		final boolean debug = Versions.isDebug();
+		long time = 0, cputime = 0;
+		if (debug) {
+			time = System.nanoTime();
+			cputime = Debug.threadCpuTimeNanos();
+		}
+
 		try {
 			runnable.run();
-		} catch(RuntimeException e) {
+		} catch(final RuntimeException e) {
 			failed = true;
 			Log.w(TAG, "Exception in " + runnable.tag, e);
 		} finally {
-			cputime = (Debug.threadCpuTimeNanos() - cputime) / 1000000;
-			time = (System.nanoTime() - time) / 1000000;
-			
-			if(Versions.isDebug()) {
+			if (debug) {
+				cputime = (Debug.threadCpuTimeNanos() - cputime) / 1000000;
+				time = (System.nanoTime() - time) / 1000000;
 				Log.i(TAG, "Timing - " + runnable.tag + (failed ? " (failed): " : ": ")
 						+ cputime / 1000000 + "ms (cpu) / " + time / 1000000 + "ms (real)");
 			}
@@ -93,37 +97,37 @@ public class Coordinator {
 		if (Build.VERSION.SDK_INT >= VERSION_CODES.HONEYCOMB)
 			return AsyncTask.SERIAL_EXECUTOR;
 		else try {
-			Field field = AsyncTask.class.getDeclaredField("sExecutor");
+			final Field field = AsyncTask.class.getDeclaredField("sExecutor");
 			field.setAccessible(true);
 			return (Executor) field.get(null);
-		} catch(Exception e) { return null; }
+		} catch(final Exception e) { return null; }
 	}
 
 	static Executor getCurrentExecutor() {
 		return mExecutor;
 	}
-	
+
 	private static final Queue<TaggedRunnable> mIdleTasks = new LinkedList<TaggedRunnable>();
 	private static final Executor mExecutor;
 	private static final String TAG = "Coord";
 
 	static {
-		SaturativeExecutor executor = new SaturativeExecutor();
+		final SaturativeExecutor executor = new SaturativeExecutor();
 		if (SaturativeExecutor.installAsDefaultAsyncTaskExecutor(executor))
 			mExecutor = executor;
 		else {
-			Executor default_executor = getDefaultAsyncTaskExecutor();
+			final Executor default_executor = getDefaultAsyncTaskExecutor();
 			mExecutor = default_executor != null ? default_executor : executor;
 		}
 	}
 
 	static class StandaloneTask extends AsyncTask<Void, Void, Void> {
 
-		public StandaloneTask(TaggedRunnable runnable) {
+		public StandaloneTask(final TaggedRunnable runnable) {
 			mRunnable = runnable;
 		}
 
-		@Override @Nullable protected Void doInBackground(Void... params) {
+		@Override @Nullable protected Void doInBackground(final Void... params) {
 			runWithTiming(mRunnable);
 			return null;
 		}
