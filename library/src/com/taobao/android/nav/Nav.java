@@ -44,12 +44,18 @@ public class Nav {
 		/**
 		 * Called when failed to navigate to the specific destination.
 		 *
-		 * @param intent the activity intent to be started which caused the exception.
-		 *   It is expected to be changed if retry is needed.
-		 * @param e the exception (most probably {@link android.content.ActivityNotFoundException ActivityNotFoundException})
-		 * @return whether to retry the navigation. <b>When failed in retry, this called will not be called again.</b>
+		 * @param intent the activity intent to be started which caused the exception
+		 *   (may be modified by {@link NavPreprocessor}). It is supposed to be changed if retry is needed.
+		 * @param e the exception (most probably {@link android.content.ActivityNotFoundException})
+		 * @return whether to retry the navigation.
+		 *   <b>When failed in retry, this called will not be called again.</b>
 		 */
 		boolean onException(Intent intent, Exception e);
+	}
+
+	public static class NavigationCanceledException extends Exception {
+
+		private static final long serialVersionUID = 5015146091187397488L;
 	}
 
 	/** @param context use current Activity if possible */
@@ -76,10 +82,20 @@ public class Nav {
 	}
 
 	/** Start activity associated with the specific URI. */
+	@SuppressWarnings("null")		// SDK lacks nullness annotation.
+	public void toUri(final String uri) {
+		toUri(Uri.parse(uri));
+	}
+
+	/** Start activity associated with the specific URI. */
 	public void toUri(final Uri uri) {
-		final Intent intent = to(uri);
-		if (intent == null) return;
 		NavExceptionHandler exception_handler = mExceptionHandler;
+		final Intent intent = to(uri);
+		if (intent == null) {
+			if (exception_handler != null)
+				exception_handler.onException(mIntent, new NavigationCanceledException());
+			return;
+		}
 		for (;;) try {
 			mContext.startActivity(intent);
 			break;
