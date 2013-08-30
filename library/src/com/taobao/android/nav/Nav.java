@@ -13,6 +13,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 
 /**
  * Cross-Platform Navigation (based on URI)
@@ -63,12 +64,6 @@ public class Nav {
 		return new Nav(context);
 	}
 
-	/** Allow navigation to escape current application (for 3rd-party activity) */
-	public Nav allowEscape() {
-		mAllowLeaving = true;
-		return this;
-	}
-
 	/** Extras to be put into activity intent. */
 	public Nav withExtras(final Bundle extras) {
 		mIntent.putExtras(extras);
@@ -81,6 +76,23 @@ public class Nav {
 		return this;
 	}
 
+	/** Allow navigation to escape current application (for 3rd-party activity) */
+	public Nav allowEscape() {
+		mAllowLeaving = true;
+		return this;
+	}
+
+	/** Disallow navigation to current activity itself (specified by {@link #from(Context)}). */
+	public Nav disallowLoopback() {
+		mDisallowLoopback = true;
+		return this;
+	}
+
+	public Nav skipPreprocess() {
+		mSkipPreprocess = true;
+		return this;
+	}
+
 	/** Start activity associated with the specific URI. */
 	@SuppressWarnings("null")		// SDK lacks nullness annotation.
 	public void toUri(final String uri) {
@@ -88,23 +100,30 @@ public class Nav {
 	}
 
 	/** Start activity associated with the specific URI. */
-	public void toUri(final Uri uri) {
+	public boolean toUri(final Uri uri) {
 		NavExceptionHandler exception_handler = mExceptionHandler;
 		final Intent intent = to(uri);
 		if (intent == null) {
 			if (exception_handler != null)
 				exception_handler.onException(mIntent, new NavigationCanceledException());
-			return;
+			return false;
 		}
 		for (;;) try {
+			if (mDisallowLoopback && mContext instanceof Activity) {
+				final ComponentName target = intent.resolveActivity(mContext.getPackageManager());
+				if (target != null && target.equals(((Activity) mContext).getComponentName())) {
+					Log.w(TAG, "Loopback disallowed: " + uri);
+					return false;
+				}
+			}
 			mContext.startActivity(intent);
-			break;
+			return true;
 		} catch (final ActivityNotFoundException e) {
 			if (exception_handler != null && exception_handler.onException(intent, e)) {
 				exception_handler = null;		// To avoid dead-loop.
 				continue;
 			}
-			break;
+			return false;
 		}
 	}
 
@@ -112,8 +131,8 @@ public class Nav {
 	@Deprecated public @Nullable Intent to(final Uri uri) {
 		mIntent.setData(uri);
 		if (! mAllowLeaving) mIntent.setPackage(mContext.getPackageName());
-		// Add referrer extra
-		if (mContext instanceof Activity) {
+		// Add referrer extra if not present
+		if (mContext instanceof Activity && ! mIntent.hasExtra(KExtraReferrer)) {
 			final Intent from_intent = ((Activity) mContext).getIntent();
 			if (from_intent != null) {
 				final Uri referrer_uri = from_intent.getData(); ComponentName comp;
@@ -124,7 +143,7 @@ public class Nav {
 			}
 		}
 		// Run preprocessors
-		if (! mPreprocessor.isEmpty())
+		if (! mSkipPreprocess && ! mPreprocessor.isEmpty())
 			for (final NavPreprocessor preprocessor : mPreprocessor)
 				if (! preprocessor.beforeNavTo(mIntent))
 					return null;
@@ -160,9 +179,12 @@ public class Nav {
 	private final Context mContext;
 	private final Intent mIntent;
 	private boolean mAllowLeaving;
+	private boolean mDisallowLoopback;
+	private boolean mSkipPreprocess;
 
 	private static final List<NavPreprocessor> mPreprocessor = new ArrayList<NavPreprocessor>();
 	private static @Nullable NavExceptionHandler mExceptionHandler;
+	private static final String TAG = "Nav";
 }
 
 /** Demonstrate the usage of {@link Nav} */
@@ -174,16 +196,14 @@ class DemoActivity extends Activity {
 	}
 
 	void openUriWithinWebview(final Uri uri) {
-		final Intent intent = Nav.from(this).toActivity(uri);
-		if (intent == null) {
-			// Nothing to open
-		} else if (intent.getComponent() == null) {
+		final Nav nav = Nav.from(this);
+		// Try to resolve it in app scope.
+		if (! nav.disallowLoopback().toUri(uri)) {
 			// Try to resolve it in system scope.
-			// If succeed, start the intent, otherwise open in current WebView.
-		} else if (getComponentName().equals(intent.getComponent())) {		// Is target me?
-			// Open URI in current WebView.
-		} else {
-			startActivity(intent);
+			if (nav.skipPreprocess().allowEscape().toUri(uri)) {
+				// Open it in current WebView.
+				// ...
+			}
 		}
 	}
 }
