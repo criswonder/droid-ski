@@ -1,5 +1,7 @@
 package com.taobao.android.lifecycle;
 
+import static android.content.pm.PackageManager.GET_ACTIVITIES;
+
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -8,11 +10,15 @@ import javax.annotation.NonNullByDefault;
 import javax.annotation.Nullable;
 
 import android.app.Activity;
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 import android.os.Handler;
 
 import com.taobao.android.base.Versions;
 import com.taobao.android.compat.ApplicationCompat;
+import com.taobao.android.hurdle.Hurdle;
 import com.taobao.android.task.SafeAsyncTask;
 
 /**
@@ -29,7 +35,10 @@ public class PanguApplication extends ApplicationCompat {
 	 * <p>Since this interface may be further expanded to provide more events,
 	 * it is strongly encouraged to extend {@link AbstractActivityLifecycleCallbacks2} instead,
 	 * to keep <b>forward-compatibility</b>.
+	 *
+	 * @deprecated pending design reconsideration, DO NOT use it at present.
 	 */
+	@Deprecated
 	public interface ActivityLifecycleCallbacks2 extends ActivityLifecycleCallbacksCompat {
 		/**
 		 * Called before {@link android.app.Activity#onCreate(Bundle savedInstanceState)}
@@ -39,14 +48,14 @@ public class PanguApplication extends ApplicationCompat {
 		void onActivityPreCreate(PanguActivity activity, @Nullable Bundle savedInstanceState);
 		/** Called before {@link android.app.Activity#onPostCreate(Bundle savedInstanceState)} */
 		void onActivityPostCreate(PanguActivity activity, @Nullable Bundle savedInstanceState);
-		
+
 		/**
 		 * Called before {@link android.app.Activity#onStart()}
 		 *
 		 * <p>Note: This relies on all sub-classes of {@link PanguActivity} calling <code>super.onStart()</code> <b>first</b>.
 		 */
 		void onActivityPreStart(PanguActivity activity);
-		
+
 		/**
 		 * Called before {@link android.app.Activity#onRestart()}
 		 *
@@ -61,21 +70,26 @@ public class PanguApplication extends ApplicationCompat {
 		void onActivityPreResume(PanguActivity activity);
 		/** Called before {@link android.app.Activity#onPostResume(Bundle savedInstanceState)} */
 		void onActivityPostResume(PanguActivity activity);
-		
+
 		/** Called before {@link android.app.Activity#onWindowFocusChanged(boolean hasFocus) */
 	    void onWindowFocusChanged(boolean hasFocus);
 	}
 
-    /** Empty implementation of {@link ActivityLifecycleCallbacks2} for subset overriding */
+    /**
+     * Empty implementation of {@link ActivityLifecycleCallbacks2} for subset overriding
+     *
+	 * @deprecated pending design reconsideration, DO NOT use it at present.
+     */
+	@Deprecated
 	public static class AbstractActivityLifecycleCallbacks2 extends AbstractActivityLifecycleCallbacks implements ActivityLifecycleCallbacks2 {
 
-		@Override public void onActivityPreCreate(PanguActivity activity, @Nullable Bundle savedInstanceState) {}
-		@Override public void onActivityPostCreate(PanguActivity activity, @Nullable Bundle savedInstanceState) {}
-		@Override public void onActivityPreStart(PanguActivity activity) {}
-		@Override public void onActivityPreRestart(PanguActivity activity) {}
-		@Override public void onActivityPreResume(PanguActivity activity) {}
-		@Override public void onActivityPostResume(PanguActivity activity) {}
-		@Override public void onWindowFocusChanged(boolean hasFocus) {}
+		@Override public void onActivityPreCreate(final PanguActivity activity, @Nullable final Bundle savedInstanceState) {}
+		@Override public void onActivityPostCreate(final PanguActivity activity, @Nullable final Bundle savedInstanceState) {}
+		@Override public void onActivityPreStart(final PanguActivity activity) {}
+		@Override public void onActivityPreRestart(final PanguActivity activity) {}
+		@Override public void onActivityPreResume(final PanguActivity activity) {}
+		@Override public void onActivityPostResume(final PanguActivity activity) {}
+		@Override public void onWindowFocusChanged(final boolean hasFocus) {}
 	}
 
 	public interface CrossActivityLifecycleCallback {
@@ -93,27 +107,32 @@ public class PanguApplication extends ApplicationCompat {
 	/**
 	 * Expanded callback compared to the original one.
 	 * Only work for {@link PanguActivity} derived activities.
+	 *
+	 * @deprecated pending design reconsideration, DO NOT use it at present.
 	 */
-	public void registerActivityLifecycleCallbacks(ActivityLifecycleCallbacks2 callbacks) {
+	@Deprecated
+	public void registerActivityLifecycleCallbacks(final ActivityLifecycleCallbacks2 callbacks) {
 		super.registerActivityLifecycleCallbacks(callbacks);
 		mActivityLifecycleCallbacks.add(callbacks);
 	}
 
-	public void unregisterActivityLifecycleCallbacks(ActivityLifecycleCallbacks2 callbacks) {
+	/** @deprecated pending design reconsideration, DO NOT use it at present. */
+	@Deprecated
+	public void unregisterActivityLifecycleCallbacks(final ActivityLifecycleCallbacks2 callbacks) {
 		super.unregisterActivityLifecycleCallbacks(callbacks);
 		mActivityLifecycleCallbacks.remove(callbacks);
 	}
 
-	public void registerCrossActivityLifecycleCallback(CrossActivityLifecycleCallback callback) {
+	public void registerCrossActivityLifecycleCallback(final CrossActivityLifecycleCallback callback) {
 		mCrossActivityLifecycleCallbacks.add(callback);
 	}
 
-	public void unregisterCrossActivityLifecycleCallback(CrossActivityLifecycleCallback callback) {
+	public void unregisterCrossActivityLifecycleCallback(final CrossActivityLifecycleCallback callback) {
 		mCrossActivityLifecycleCallbacks.remove(callback);
 	}
 
 	/** Similar to {@link android.app.Activity#runOnUiThread(Runnable)}, in static manner. */
-	public static void runOnUiThread(Runnable runnable) {
+	public static void runOnUiThread(final Runnable runnable) {
 		mAppHandler.post(runnable);
 	}
 
@@ -122,47 +141,65 @@ public class PanguApplication extends ApplicationCompat {
 		Versions.init(this);
 		registerActivityLifecycleCallbacks(new CrossActivityLifecycleCallbacks());
 		SafeAsyncTask.init();
+
+		if (Versions.isDebug())
+			verifyDerivation();
 	}
 
-	void dispatchActivityPreCreate(PanguActivity activity, @Nullable Bundle savedInstanceState) {
+	private void verifyDerivation() {
+		final PackageInfo pkg_info;
+		try {
+			pkg_info = getPackageManager().getPackageInfo(getPackageName(), GET_ACTIVITIES);
+		} catch (final NameNotFoundException e) { return; /* Should never happen */ }
+		for (final ActivityInfo activity_info : pkg_info.activities) {
+			Class<?> activity_class;
+			try {
+				activity_class = Class.forName(activity_info.name);
+			} catch (final ClassNotFoundException e) { continue; }
+			if (! PanguActivity.class.isAssignableFrom(activity_class))
+				Hurdle.block(TAG, activity_class + " is not derived from " + PanguActivity.class.getSimpleName());
+		}
+	}
+
+	void dispatchActivityPreCreate(final PanguActivity activity, @Nullable final Bundle savedInstanceState) {
 		if (! mActivityLifecycleCallbacks.isEmpty())
-			for (ActivityLifecycleCallbacks2 callbacks : mActivityLifecycleCallbacks)
+			for (final ActivityLifecycleCallbacks2 callbacks : mActivityLifecycleCallbacks)
 	            callbacks.onActivityPreCreate(activity, savedInstanceState);
 	}
 
-	void dispatchActivityPostCreate(PanguActivity activity, @Nullable Bundle savedInstanceState) {
+	void dispatchActivityPostCreate(final PanguActivity activity, @Nullable final Bundle savedInstanceState) {
 		if (! mActivityLifecycleCallbacks.isEmpty())
-			for (ActivityLifecycleCallbacks2 callbacks : mActivityLifecycleCallbacks)
+			for (final ActivityLifecycleCallbacks2 callbacks : mActivityLifecycleCallbacks)
 	            callbacks.onActivityPostCreate(activity, savedInstanceState);
     }
 
-	void dispatchActivityPreStart(PanguActivity activity) {
+	void dispatchActivityPreStart(final PanguActivity activity) {
 		if (! mActivityLifecycleCallbacks.isEmpty())
-			for (ActivityLifecycleCallbacks2 callbacks : mActivityLifecycleCallbacks)
+			for (final ActivityLifecycleCallbacks2 callbacks : mActivityLifecycleCallbacks)
 	            callbacks.onActivityPreStart(activity);
 	}
-	
-	void dispatchActivityPreRestart(PanguActivity activity) {
+
+	void dispatchActivityPreRestart(final PanguActivity activity) {
 		if (! mActivityLifecycleCallbacks.isEmpty())
-			for (ActivityLifecycleCallbacks2 callbacks : mActivityLifecycleCallbacks)
+			for (final ActivityLifecycleCallbacks2 callbacks : mActivityLifecycleCallbacks)
 	            callbacks.onActivityPreRestart(activity);
 	}
 
-	void dispatchActivityPreResume(PanguActivity activity) {
+	void dispatchActivityPreResume(final PanguActivity activity) {
 		if (! mActivityLifecycleCallbacks.isEmpty())
-			for (ActivityLifecycleCallbacks2 callbacks : mActivityLifecycleCallbacks)
+			for (final ActivityLifecycleCallbacks2 callbacks : mActivityLifecycleCallbacks)
 	            callbacks.onActivityPreResume(activity);
 	}
 
-	void dispatchActivityPostResumed(PanguActivity activity) {
+	void dispatchActivityPostResumed(final PanguActivity activity) {
 		if (! mActivityLifecycleCallbacks.isEmpty())
-			for (ActivityLifecycleCallbacks2 callbacks : mActivityLifecycleCallbacks)
+			for (final ActivityLifecycleCallbacks2 callbacks : mActivityLifecycleCallbacks)
 	            callbacks.onActivityPostResume(activity);
     }
-	
-	void dispatchActivityWindowFocusChanged(boolean hasFocus) {
+
+	void dispatchActivityWindowFocusChanged(final boolean hasFocus) {
 		if (! mActivityLifecycleCallbacks.isEmpty())
-			for (ActivityLifecycleCallbacks2 callbacks : mActivityLifecycleCallbacks)
+			for (final ActivityLifecycleCallbacks2 callbacks : mActivityLifecycleCallbacks)
 	            callbacks.onWindowFocusChanged(hasFocus);
 	}
 
@@ -171,35 +208,36 @@ public class PanguApplication extends ApplicationCompat {
 	private final AtomicInteger mCreationCount = new AtomicInteger();
 	private final AtomicInteger mStartCount = new AtomicInteger();
 	private static final Handler mAppHandler = new Handler();
+	private static final String TAG = "PanguApp";
 
 	class CrossActivityLifecycleCallbacks implements ActivityLifecycleCallbacksCompat {
 
-		@Override public void onActivityCreated(Activity activity, @Nullable Bundle savedInstanceState) {
+		@Override public void onActivityCreated(final Activity activity, @Nullable final Bundle savedInstanceState) {
 			if (mCreationCount.getAndIncrement() == 0 && ! mCrossActivityLifecycleCallbacks.isEmpty())
-	            for (CrossActivityLifecycleCallback callback : mCrossActivityLifecycleCallbacks)
+	            for (final CrossActivityLifecycleCallback callback : mCrossActivityLifecycleCallbacks)
 	            	callback.onCreated(activity);
 		}
 
-		@Override public void onActivityStarted(Activity activity) {
+		@Override public void onActivityStarted(final Activity activity) {
 			if (mStartCount.getAndIncrement() == 0 && ! mCrossActivityLifecycleCallbacks.isEmpty())
-	            for (CrossActivityLifecycleCallback callback : mCrossActivityLifecycleCallbacks)
+	            for (final CrossActivityLifecycleCallback callback : mCrossActivityLifecycleCallbacks)
 	            	callback.onStarted(activity);
 		}
 
-		@Override public void onActivityStopped(Activity activity) {
+		@Override public void onActivityStopped(final Activity activity) {
 			if (mStartCount.decrementAndGet() == 0 && ! mCrossActivityLifecycleCallbacks.isEmpty())
-	            for (CrossActivityLifecycleCallback callback : mCrossActivityLifecycleCallbacks)
+	            for (final CrossActivityLifecycleCallback callback : mCrossActivityLifecycleCallbacks)
 	                callback.onStopped(activity);
 		}
 
-		@Override public void onActivityDestroyed(Activity activity) {
+		@Override public void onActivityDestroyed(final Activity activity) {
 			if (mCreationCount.decrementAndGet() == 0 && ! mCrossActivityLifecycleCallbacks.isEmpty())
-	            for (CrossActivityLifecycleCallback callback : mCrossActivityLifecycleCallbacks)
+	            for (final CrossActivityLifecycleCallback callback : mCrossActivityLifecycleCallbacks)
 	                callback.onDestroyed(activity);
 		}
 
-		@Override public void onActivityResumed(Activity activity) {}
-		@Override public void onActivityPaused(Activity activity) {}
-		@Override public void onActivitySaveInstanceState(Activity activity, Bundle outState) {}
+		@Override public void onActivityResumed(final Activity activity) {}
+		@Override public void onActivityPaused(final Activity activity) {}
+		@Override public void onActivitySaveInstanceState(final Activity activity, final Bundle outState) {}
 	}
 }
