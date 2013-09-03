@@ -3,14 +3,15 @@ package com.taobao.android.nav;
 import javax.annotation.NonNullByDefault;
 import javax.annotation.Nullable;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 
+import com.taobao.android.lifecycle.PanguActivity;
+
 /** @author Oasis */
 @NonNullByDefault
-public class NavRouterActivity extends Activity {
+public class NavRouterActivity extends PanguActivity {
 
 	@Override protected void onCreate(final @SuppressWarnings("null") Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
