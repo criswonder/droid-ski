@@ -151,14 +151,19 @@ public class PanguApplication extends ApplicationCompat {
 		try {
 			pkg_info = getPackageManager().getPackageInfo(getPackageName(), GET_ACTIVITIES);
 		} catch (final NameNotFoundException e) { return; /* Should never happen */ }
+
+		final StringBuilder activities = new StringBuilder();
 		for (final ActivityInfo activity_info : pkg_info.activities) {
 			Class<?> activity_class;
 			try {
 				activity_class = Class.forName(activity_info.name);
 			} catch (final ClassNotFoundException e) { continue; }
 			if (! PanguActivity.class.isAssignableFrom(activity_class))
-				Hurdle.block(TAG, activity_class + " is not derived from " + PanguActivity.class.getSimpleName());
+				activities.append(',').append(activity_info.name);
 		}
+		if (activities.length() > 0)
+			Hurdle.block(TAG, "Not derived from " + PanguActivity.class.getSimpleName() + ": " + activities.substring(1));
+
 	}
 
 	void dispatchActivityPreCreate(final PanguActivity activity, @Nullable final Bundle savedInstanceState) {
