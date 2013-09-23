@@ -87,7 +87,7 @@ public class Coordinator {
 				cputime = (Debug.threadCpuTimeNanos() - cputime) / 1000000;
 				time = (System.nanoTime() - time) / 1000000;
 				Log.i(TAG, "Timing - " + runnable.tag + (failed ? " (failed): " : ": ")
-						+ cputime / 1000000 + "ms (cpu) / " + time / 1000000 + "ms (real)");
+						+ cputime + "ms (cpu) / " + time + "ms (real)");
 			}
 		}
 	}
