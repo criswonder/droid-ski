@@ -111,7 +111,8 @@ public class Nav {
 		for (;;) try {
 			if (mDisallowLoopback && mContext instanceof Activity) {
 				final ComponentName target = intent.resolveActivity(mContext.getPackageManager());
-				if (target != null && target.equals(((Activity) mContext).getComponentName())) {
+				if (target == null) throw new ActivityNotFoundException("No Activity found to handle " + intent);
+				if (target.equals(((Activity) mContext).getComponentName())) {
 					Log.w(TAG, "Loopback disallowed: " + uri);
 					return false;
 				}
