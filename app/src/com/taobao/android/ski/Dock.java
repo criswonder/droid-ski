@@ -96,7 +96,7 @@ public class Dock extends Instrumentation {
 
 		waitForIdleSync();		// TODO: Wait for CPU to be real idle
 
-		ActivityMonitor monitor = new ActivityMonitor("com.taobao.tao.MainActivity2", null, false);
+		ActivityMonitor monitor = new ActivityMonitor("com.taobao.tao.MainActivity3", null, false);
 		addMonitor(monitor);
 
 		//mCollector.beginSnapshot("Startup");
