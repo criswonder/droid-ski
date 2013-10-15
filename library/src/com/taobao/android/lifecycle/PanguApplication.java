@@ -142,8 +142,8 @@ public class PanguApplication extends ApplicationCompat {
 		registerActivityLifecycleCallbacks(new CrossActivityLifecycleCallbacks());
 		SafeAsyncTask.init();
 
-//		if (Versions.isDebug())
-//			verifyDerivation();
+		if (Versions.isDebug())
+			verifyDerivation();
 	}
 
 	private void verifyDerivation() {
