@@ -15,6 +15,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.TextUtils;
 
 import com.taobao.android.base.Versions;
 import com.taobao.android.compat.ApplicationCompat;
@@ -156,6 +157,10 @@ public class PanguApplication extends ApplicationCompat {
 		for (final ActivityInfo activity_info : pkg_info.activities) {
 			Class<?> activity_class;
 			try {
+				//didn't check remote activities.
+				if(!TextUtils.isEmpty(activity_info.processName))
+					continue;
+				
 				activity_class = Class.forName(activity_info.name);
 			} catch (final ClassNotFoundException e) { continue; }
 			if (! PanguActivity.class.isAssignableFrom(activity_class))
