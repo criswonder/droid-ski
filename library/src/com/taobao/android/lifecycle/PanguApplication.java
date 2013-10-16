@@ -158,7 +158,7 @@ public class PanguApplication extends ApplicationCompat {
 			Class<?> activity_class;
 			try {
 				//didn't check remote activities.
-				if(!TextUtils.isEmpty(activity_info.processName))
+				if(!activity_info.processName.equals(activity_info.applicationInfo.processName))
 					continue;
 				
 				activity_class = Class.forName(activity_info.name);
