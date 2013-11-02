@@ -15,6 +15,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.taobao.android.base.Versions;
+
 /**
  * Cross-Platform Navigation (based on URI)
  *
@@ -61,6 +63,8 @@ public class Nav {
 
 	/** @param context use current Activity if possible */
 	public static Nav from(final Context context) {
+		if (Versions.isDebug() && context == context.getApplicationContext())
+			throw new IllegalArgumentException("Application context is not allowed, use actual context instead.");
 		return new Nav(context);
 	}
 
