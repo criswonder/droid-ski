@@ -15,7 +15,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 import android.os.Handler;
-import android.text.TextUtils;
 
 import com.taobao.android.base.Versions;
 import com.taobao.android.compat.ApplicationCompat;
@@ -105,6 +104,15 @@ public class PanguApplication extends ApplicationCompat {
         void onDestroyed(Activity activity);
 	}
 
+	/** Simplifies the implementation of CrossActivityLifecycleCallback */
+	public static class AbstractCrossActivityLifecycleCallback {
+
+        void onCreated(final Activity activity) {}
+        void onStarted(final Activity activity) {}
+        void onStopped(final Activity activity) {}
+        void onDestroyed(final Activity activity) {}
+	}
+
 	/**
 	 * Expanded callback compared to the original one.
 	 * Only work for {@link PanguActivity} derived activities.
@@ -160,7 +168,7 @@ public class PanguApplication extends ApplicationCompat {
 				//didn't check remote activities.
 				if(!activity_info.processName.equals(activity_info.applicationInfo.processName))
 					continue;
-				
+
 				activity_class = Class.forName(activity_info.name);
 			} catch (final ClassNotFoundException e) { continue; }
 			if (! PanguActivity.class.isAssignableFrom(activity_class))
