@@ -231,24 +231,40 @@ public class PanguApplication extends ApplicationCompat {
 	class CrossActivityLifecycleCallbacks implements ActivityLifecycleCallbacksCompat {
 
 		@Override public void onActivityCreated(final Activity activity, @Nullable final Bundle savedInstanceState) {
+			if(activity==null || !PanguActivity.class.isAssignableFrom(activity.getClass()))
+			{
+				return;
+			}
 			if (mCreationCount.getAndIncrement() == 0 && ! mCrossActivityLifecycleCallbacks.isEmpty())
 	            for (final CrossActivityLifecycleCallback callback : mCrossActivityLifecycleCallbacks)
 	            	callback.onCreated(activity);
 		}
 
 		@Override public void onActivityStarted(final Activity activity) {
+			if(activity==null || !PanguActivity.class.isAssignableFrom(activity.getClass()))
+			{
+				return;
+			}
 			if (mStartCount.getAndIncrement() == 0 && ! mCrossActivityLifecycleCallbacks.isEmpty())
 	            for (final CrossActivityLifecycleCallback callback : mCrossActivityLifecycleCallbacks)
 	            	callback.onStarted(activity);
 		}
 
 		@Override public void onActivityStopped(final Activity activity) {
+			if(activity==null || !PanguActivity.class.isAssignableFrom(activity.getClass()))
+			{
+				return;
+			}
 			if (mStartCount.decrementAndGet() == 0 && ! mCrossActivityLifecycleCallbacks.isEmpty())
 	            for (final CrossActivityLifecycleCallback callback : mCrossActivityLifecycleCallbacks)
 	                callback.onStopped(activity);
 		}
 
 		@Override public void onActivityDestroyed(final Activity activity) {
+			if(activity==null || !PanguActivity.class.isAssignableFrom(activity.getClass()))
+			{
+				return;
+			}
 			if (mCreationCount.decrementAndGet() == 0 && ! mCrossActivityLifecycleCallbacks.isEmpty())
 	            for (final CrossActivityLifecycleCallback callback : mCrossActivityLifecycleCallbacks)
 	                callback.onDestroyed(activity);

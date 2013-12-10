@@ -8,8 +8,9 @@ import com.taobao.android.base.Versions;
 public class Hurdle {
 
 	public static void block(final String tag, final String message) {
-		if (Versions.isDebug())
-			throw new HurdleBlockedError(message);
+//		if (Versions.isDebug())
+//			throw new HurdleBlockedError(message);
+		Log.w(tag, message);
 	}
 
 	public static void warn(final String tag, final String message) {

@@ -7,8 +7,6 @@ import javax.annotation.NonNullByDefault;
 import android.app.Application;
 import android.content.pm.ApplicationInfo;
 
-import com.taobao.android.ski.BuildConfig;
-
 /** @author Oasis */
 @NonNullByDefault
 public class Versions {
@@ -29,6 +27,6 @@ public class Versions {
         } catch (final Exception e) {}      // Including NPE
     }
 
-    private static boolean DEBUG = BuildConfig.DEBUG;
+    private static boolean DEBUG = false;
 
 }
